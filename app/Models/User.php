@@ -51,6 +51,18 @@ class User extends Authenticatable
         ];
     }
 
- 
-    
+    public function cart() //1 user has many carts
+    {
+        return $this->hasMany(Cart::class, 'user_id', 'id');
+    }
+
+    public function latestCart() //fetching latest/current cart
+    {
+        return $this->hasOne(Cart::class, 'user_id', 'id')->latestOfMany('cart_id');
+    }
+
+    public function orders() //1 User many orders
+    {
+        return $this->hasMany(Order::class, 'user_id', 'id');
+    }
 }

@@ -6,5 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order_item extends Model
 {
-    //
+    protected $primaryKey = 'order_item_id';
+
+    protected $fillable = ['order_id', 'product_id', 'quantity', 'price_at_purchase'];
+
+    protected $casts = [
+        'price_at_purchase' => 'decimal:2',
+    ];
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class, 'order_id', 'order_id');
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id', 'product_id');
+    }
 }
