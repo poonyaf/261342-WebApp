@@ -28,7 +28,8 @@ class OrderController extends Controller
      */
     public function create()
     {
-        //
+        $products = Product::all();
+        return view('orders.create', compact('products'));
     }
 
     /**
@@ -82,19 +83,53 @@ class OrderController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        
+    }
+
+    /** 
+     * Mark order as packing
+     */
+    public function markAsPacking(string $id)
+    {
+        $order = Order::where('order_id', $id)->firstOrFail();
+        
+        if ($order->status !== 'processing') {
+            return redirect()->route('orders.index')
+                           ->with('warning', 'Order must be in processing status to pack.');
+        }
+
+        $order->markAsPacking();
+        return redirect()->route('orders.index')->with('success', 'Order marked as packing.');
     }
 
     /**
      * Update the specified resource in storage.
      */
-<<<<<<< HEAD
     public function markAsDelivering(string $id) //according to the order flow (order status), only orders in packing status can be marked as delivering
-=======
-    public function update(Request $request, string $id)
->>>>>>> 361d3bdba57949bd08b26beb3896d583a6c80445
     {
-        //
+        $order = Order::where('order_id', $id)->firstOrFail();
+        if ($order->status !== 'packing') {
+            return redirect()->back()->with('error', 'Only orders in packing status can be marked as delivering.');
+        }
+        $order->markAsDelivering();
+        return redirect()->route('orders.show', $order->order_id)
+                         ->with('success', 'Order marked as delivering successfully.');
+    }
+
+    /**
+     * Mark order as complete
+     */
+    public function markAsComplete(string $id)
+    {
+        $order = Order::where('order_id', $id)->firstOrFail();
+        
+        if ($order->status !== 'delivering') {
+            return redirect()->route('orders.index')
+                           ->with('warning', 'Order must be in delivering status to complete.');
+        }
+
+        $order->markAsComplete();
+        return redirect()->route('orders.index')->with('success', 'Order marked as complete.');
     }
 
     /**
@@ -102,6 +137,9 @@ class OrderController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $order = Order::where('order_id', $id)->firstOrFail();
+        $order->delete();
+
+        return redirect()->route('orders.index')->with('success', 'Order deleted successfully.');
     }
 }

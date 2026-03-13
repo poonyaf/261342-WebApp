@@ -49,7 +49,6 @@ class Product extends Model
             ->withPivot(['quantity', 'price_at_purchase'])
             ->withTimestamps();
     }
-<<<<<<< HEAD
 
     public function isInStock($quantity = 1) //Check is stock is available for the requested quantity   
     {
@@ -69,10 +68,8 @@ class Product extends Model
         $this->save();
     }
     
-=======
     public function tags()
 {
     return $this->morphToMany(Tag::class, 'taggable');
 }
->>>>>>> 361d3bdba57949bd08b26beb3896d583a6c80445
 }
