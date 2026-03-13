@@ -137,8 +137,9 @@ class PaymentController extends Controller
 
         $payment->markAsFailed();
 
-        // Mark order as failed when payment fails
+        // Mark order as failed when payment fails and restore product stock
         $payment->order->markAsFailed();
+        $payment->order->restoreProductStock();
 
         return redirect()->route('payments.index')->with('warning', 'Payment marked as failed.');
     }

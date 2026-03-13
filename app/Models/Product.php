@@ -49,6 +49,25 @@ class Product extends Model
             ->withPivot(['quantity', 'price_at_purchase'])
             ->withTimestamps();
     }
+
+    public function isInStock($quantity = 1) //Check is stock is available for the requested quantity   
+    {
+        if ($this->stock_number < $quantity) {
+            throw new \Exception('Product does not have enough stock. Requested: ' . $quantity . ', Available: ' . $this->stock_number);
+        }
+        return true;
+    }
+
+    // Remove from the stock when order is completed
+    public function decrementStock($quantity = 1)
+    {
+        if ($this->stock_number < $quantity) { // check is stock enough or not
+            throw new \Exception('Cannot decrement stock. Not enough product available. Requested: ' . $quantity . ', Available: ' . $this->stock_number);
+        }
+        $this->stock_number -= $quantity; // Decrement stock number if successful
+        $this->save();
+    }
+    
     public function tags()
 {
     return $this->morphToMany(Tag::class, 'taggable');

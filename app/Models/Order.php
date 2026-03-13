@@ -67,7 +67,16 @@ class Order extends Model
     public function markAsComplete()
     {
         $this->update(['status' => 'complete']);
+        $this->decrementProductStock();
         return $this;
+    }
+
+    // Decrement product stock when order is completed
+    public function decrementProductStock()
+    {
+        foreach ($this->items as $item) {
+            $item->product->decrementStock($item->quantity);
+        }
     }
 
     // Mark order as failed
@@ -75,5 +84,13 @@ class Order extends Model
     {
         $this->update(['status' => 'order fail']);
         return $this;
+    }
+
+    // Increment product stock back when order fails (restore inventory)
+    public function restoreProductStock()
+    {
+        foreach ($this->items as $item) {
+            $item->product->increment('stock_number', $item->quantity);
+        }
     }
 }

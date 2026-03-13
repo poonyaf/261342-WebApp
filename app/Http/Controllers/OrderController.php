@@ -28,6 +28,52 @@ class OrderController extends Controller
      */
     public function create()
     {
+        $products = Product::all();
+        return view('orders.create', compact('products'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+        'products' => 'required|array|min:1',
+        'products.*.product_id' => 'required|exists:products,product_id',
+        'products.*.quantity'  => 'required|integer|min:1',
+        ]);
+        // Fetch products and calculate total price
+    $productIds = collect($validated['products'])->pluck('product_id');
+    $products   = Product::findMany($productIds)->keyBy('product_id');
+     $total = collect($validated['products'])->sum(
+        fn($item) => $products[$item['product_id']]->price * $item['quantity']
+    );
+    // Create order and attach products
+    $order = Auth::user()->orders()->create([
+        'status'      => 'pending',
+        'total_amount' => $total,
+        'order_date'   => now(),
+    ]);
+    $orderItems = collect($validated['products'])->map(
+            fn($item) => [
+                'product_id'        => $item['product_id'],
+                'quantity'          => $item['quantity'],
+                'price_at_purchase' => $products[$item['product_id']]->price,
+            ]
+        )->toArray();
+
+        $order->items()->createMany($orderItems);
+// Clear user's cart after order creation
+        Auth::user()->cart()->first()?->items()->delete();
+    return redirect()->route('orders.show', $order->order_id)
+                     ->with('success', 'Order created successfully');
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
         //
     }
 
@@ -69,20 +115,17 @@ class OrderController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Update the specified resource in storage.
      */
-    public function show(string $id)
+    public function markAsDelivering(string $id) //according to the order flow (order status), only orders in packing status can be marked as delivering
     {
-        $order =Auth::user()->orders()->with('items.product')->findOrFail($id);
-        return view('orders.show', compact('order'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
+        $order = Order::where('order_id', $id)->firstOrFail();
+        if ($order->status !== 'packing') {
+            return redirect()->back()->with('error', 'Only orders in packing status can be marked as delivering.');
+        }
+        $order->markAsDelivering();
+        return redirect()->route('orders.show', $order->order_id)
+                         ->with('success', 'Order marked as delivering successfully.');
     }
 
     /**
@@ -99,5 +142,16 @@ class OrderController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        $order = Order::where('order_id', $id)->firstOrFail();
+        $order->delete();
+
+        return redirect()->route('orders.index')->with('success', 'Order deleted successfully.');
     }
 }
