@@ -110,10 +110,14 @@ function changeQty(change) {
         </button>
     </form>
 
-                <button class="bg-brown-600 text-white px-6 py-3 rounded-lg">
-                    ⚡ ซื้อเลย
-                </button>
-
+        <form method="POST" action="{{ route('orders.storeNow') }}">
+        @csrf
+        <input type="hidden" name="product_id" value="{{ $product->product_id }}">
+        <input type="hidden" name="quantity" id="quantity-input" value="1">
+        <button type="submit" class="border px-6 py-3 rounded-lg hover:bg-gray-100">
+            Buy Now ⚡
+        </button>
+    </form>
             </div>
 
         </div>

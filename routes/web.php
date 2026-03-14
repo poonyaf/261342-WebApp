@@ -45,7 +45,7 @@ Route::middleware('auth')->group(function () {
 Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
 Route::get('/payments/create/{order_id}', [PaymentController::class, 'create'])->name('payments.create');
 Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
-
+Route::get('/payments/{id}', [PaymentController::class, 'show'])->name('payments.show');
     
 });
 
