@@ -8,11 +8,15 @@ class Order extends Model
 {
     protected $primaryKey = 'order_id';
 
-    protected $fillable = ['user_id', 'status', 'total_amount', 'order_date'];
+    protected $fillable = ['user_id', 'status', 'payment_status','total_amount', 'order_date'];
 
     protected $casts = [
         'order_date' => 'datetime',
         'total_amount' => 'decimal:2',
+    ];
+
+    protected $attributes = [
+        'status' => 'pending', // Default status is pending
     ];
 
     public function user()
@@ -37,4 +41,68 @@ class Order extends Model
     { 
         return $this->hasMany(Payment::class, 'order_id', 'order_id'); 
     }
+
+    // Mark order as processing (payment initiated)
+    public function markAsProcessing()
+    {
+        $this->update(['status' => 'processing']);
+        return $this;
+    }
+
+    // Mark order as packing
+    public function markAsPacking()
+    {
+        $this->update(['status' => 'packing']);
+        return $this;
+    }
+
+    // Mark order as delivering
+    public function markAsDelivering()
+    {
+        $this->update(['status' => 'delivering']);
+        return $this;
+    }
+
+    // Mark order as complete
+    public function markAsComplete()
+    {
+        $this->update(['status' => 'complete']);
+        $this->decrementProductStock();
+        return $this;
+    }
+
+    // Decrement product stock when order is completed
+    public function decrementProductStock()
+    {
+        foreach ($this->items as $item) {
+            $item->product->decrementStock($item->quantity);
+        }
+    }
+
+    // Mark order as failed
+    public function markAsFailed()
+    {
+        $this->update(['status' => 'order fail']);
+        return $this;
+    }
+
+    // Increment product stock back when order fails (restore inventory)
+    public function restoreProductStock()
+    {
+        foreach ($this->items as $item) {
+            $item->product->increment('stock_number', $item->quantity);
+        }
+    }
+    // Mark order as paid
+    public function isPaid(): bool
+{
+    return $this->payments()->where('status', 'paid')->exists();
+}
+// Mark order as cancelled
+public function markAsCancelled()
+{
+    $this->update(['status' => 'cancelled']);
+    return $this;
+}
+
 }

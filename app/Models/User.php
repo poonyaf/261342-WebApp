@@ -17,6 +17,7 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+   
     protected $fillable = [
         'name',
         'email',
@@ -51,9 +52,9 @@ class User extends Authenticatable
         ];
     }
 
-    public function cart() //1 user has many carts
+    public function cart() //1 user has one cart //add many item pass cartItem
     {
-        return $this->hasMany(Cart::class, 'user_id', 'id');
+        return $this->hasOne(Cart::class, 'user_id', 'id');
     }
 
     public function latestCart() //fetching latest/current cart
@@ -65,4 +66,5 @@ class User extends Authenticatable
     {
         return $this->hasMany(Order::class, 'user_id', 'id');
     }
+>>>>>>>>> Temporary merge branch 2
 }

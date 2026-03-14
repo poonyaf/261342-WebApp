@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Payment;
-
+use App\Models\Order;
 class PaymentController extends Controller
 {
     /**
@@ -12,18 +12,26 @@ class PaymentController extends Controller
      */
     public function index()
     {
-        //$payments = Payment::where('user_id', Auth::id())->get();
-        //$payments =Auth()->orders()->with('payment')->get();
-        $payments=Auth()->user()->payments()->get();
-        return view('payments.index', compact('payments'));
+        $payments = Payment::whereHas('order', function ($query) {
+                $query->where('user_id', Auth::id());
+            })->where('status', 'paid') ->with('order')->get();
+        $unpaidOrders = Auth::user()->orders()
+    ->whereIn('status', ['pending', 'cancelled'])
+    ->where('payment_status', '!=', 'paid')
+    ->with('items.product')
+    ->get();
+        return view('payments.index', compact('payments', 'unpaidOrders'));
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    //string $order_id ==> /payments/create/1 
+    //if use $request->order_id ==> /payments/create?order_id=1
+    public function create(Request $request,string $order_id)
     {
-        return view('payments.create');
+        $order = Auth::user()->orders()->findOrFail($order_id);
+        return view('payments.create', compact('order'));
     }
 
     /**
@@ -32,14 +40,46 @@ class PaymentController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'amount' => 'required|numeric',
-            'payment_method' => 'required|string',
-            'status' => 'required|string',
+            'order_id' => 'required|exists:orders,order_id',
+            'amount'   => 'required|numeric',
+            'method'   => 'required|string',
+        
+            //no need to validate status as it will be set to pending by default
+            //'status'   => 'required|string',
         ]);
+        $validatedData['payment_date'] = now();
+        $validatedData['status'] = 'paid'; // Default status is pending
 
-        Payment::create($validatedData);
+        $order = Auth::user()->orders()->findOrFail($validatedData['order_id']);
 
-        return redirect()->route('payments.index')->with('success', 'Payment created successfully.');
+        // Update payment record for the order instead of creating a new one
+        $payment = $order->payments()->where('status', 'unpaid')->first();
+        if ($payment) {
+    // มี record เดิม → update
+    $payment->update([
+        'status'       => 'paid',
+        'method'       => $validatedData['method'],
+        'payment_date' => now(),
+    ]);
+
+} else {
+    // ไม่มี record เดิม → create ใหม่
+    $payment = $order->payments()->create([
+        'amount'       => $validatedData['amount'],
+        'method'       => $validatedData['method'],
+        'status'       => 'paid',
+        'payment_date' => now(),
+    ]);
+}
+
+   
+    Order::where('order_id', $order->order_id)->update(['payment_status' => 'paid']);
+    $order->markAsProcessing();
+  
+        
+        //use getKey() to get the primary key of the newly created payment record, which is payment_id in this case, and pass it to the route for showing payment details
+        return redirect()->route('payments.show', $payment->getKey())
+                         ->with('success', 'Payment created successfully.');
     }
 
     /**
@@ -47,7 +87,11 @@ class PaymentController extends Controller
      */
     public function show(string $id)
     {
-        $payment = Auth::user()->payments()->findOrFail($id);
+        $payment = Payment::where('payment_id', $id)
+            ->whereHas('order', function ($query) {
+                $query->where('user_id', Auth::id());
+            })->with('order')->firstOrFail();
+
         return view('payments.show', compact('payment'));
     }
 
@@ -56,7 +100,11 @@ class PaymentController extends Controller
      */
     public function edit(string $id)
     {
-        $payment = Auth::user()->payments()->findOrFail($id);
+        $payment = Payment::where('payment_id', $id)
+            ->whereHas('order', function ($query) {
+                $query->where('user_id', Auth::id());
+            })->with('order')->firstOrFail();
+
         return view('payments.edit', compact('payment'));
     }
 
@@ -65,10 +113,14 @@ class PaymentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $payment = Auth::user()->payments()->findOrFail($id);   
+        $payment = Payment::where('payment_id', $id)
+            ->whereHas('order', function ($query) {
+                $query->where('user_id', Auth::id());
+            })->with('order')->firstOrFail();
+
         $validatedData = $request->validate([
             'amount' => 'required|numeric',
-            'payment_method' => 'required|string',
+            'method' => 'required|string',
             'status' => 'required|string',
         ]);
         $payment->update($validatedData);
@@ -82,11 +134,45 @@ class PaymentController extends Controller
     public function destroy(string $id)
     {
         $payment = Payment::where('payment_id', $id)
-         ->where('user_id', Auth::id())
-         ->firstOrFail(); // Will throw a ModelNotFoundException if the entry doesn't exist or doesn't belong to the user
+                         ->where('user_id', Auth::id())
+                         ->firstOrFail();
+        $payment->delete();
 
-     $payment->delete();
+        return redirect()->route('payments.index')->with('status', 'Payment deleted successfully!');
+    }
 
-     return redirect()->route('payments.index')->with('status', 'Payment deleted successfully!');
+    /**
+     * Mark payment as complete
+     */
+    public function markComplete(string $id)
+    {
+        $payment = Payment::where('payment_id', $id)
+                         ->where('user_id', Auth::id())
+                         ->firstOrFail();
+
+        $payment->markAsComplete();
+
+        // Mark order as complete when payment is completed
+        $payment->order->markAsComplete();
+
+        return redirect()->route('payments.index')->with('success', 'Payment marked as complete.');
+    }
+
+    /**
+     * Mark payment as failed
+     */
+    public function markFailed(string $id)
+    {
+        $payment = Payment::where('payment_id', $id)
+                         ->where('user_id', Auth::id())
+                         ->firstOrFail();
+
+        $payment->markAsFailed();
+
+        // Mark order as failed when payment fails and restore product stock
+        $payment->order->markAsFailed();
+        $payment->order->restoreProductStock();
+
+        return redirect()->route('payments.index')->with('warning', 'Payment marked as failed.');
     }
 }
