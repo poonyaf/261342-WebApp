@@ -104,5 +104,9 @@ public function markAsCancelled()
     $this->update(['status' => 'cancelled']);
     return $this;
 }
-
+//order status
+public function status()
+{
+    return $this->belongsTo(OrderStatus::class, 'order_status_id');
+}
 }

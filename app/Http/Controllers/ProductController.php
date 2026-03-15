@@ -32,7 +32,9 @@ class ProductController extends Controller
      */
     public function create()
     {
-        return view('products.create');
+        //pull all tags from database
+        $tags = Tag::all();
+        return view('products.create',compact('tags'));
     }
 
     /**
@@ -72,7 +74,7 @@ class ProductController extends Controller
         $inWishlist = Auth::check()? $product->wishlists()->where('user_id', Auth::id())->exists() : false;
     return view('products.show', compact('product', 'inWishlist'));
     }
-
+    
     /**
      * Show the form for editing the specified resource.
      */
@@ -109,7 +111,7 @@ class ProductController extends Controller
 
         $product->update($validatedData);
 
-        return redirect()->route('products.index')->with('success', 'Product updated successfully.');
+        return redirect()->route('admin.products')->with('success', 'Product updated successfully.');
     }
 
     /**

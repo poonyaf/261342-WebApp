@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Tag;
 use App\Models\CartItem;
+use App\Models\Wishlist;
 class Product extends Model
 {
     protected $primaryKey = 'product_id';
@@ -71,5 +72,9 @@ class Product extends Model
     public function tags()
 {
     return $this->morphToMany(Tag::class, 'taggable');
+}
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class, 'product_id', 'product_id');
 }
 }

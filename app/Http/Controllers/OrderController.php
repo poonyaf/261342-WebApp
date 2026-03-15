@@ -70,7 +70,13 @@ class OrderController extends Controller
         )->toArray();
 
         $order->items()->createMany($orderItems);
-// Clear user's cart after order creation
+        $order->payments()->create([
+            'status'       => 'unpaid',
+            'method'       => $validated['payment_method'],
+            'amount'       => $total,
+            'payment_date' => now(), // Payment date will be set when payment is completed
+        ]);
+        // Clear user's cart after order creation
         Auth::user()->cart()->first()?->items()->delete();
     return redirect()->route('payments.create', $order->order_id)
                  ->with('success', 'Order created successfully');
@@ -138,14 +144,37 @@ public function edit(string $id)
                          ->with('success', 'Order updated successfully');
     });
 }
-//need confirm order page before store order, to show order summary and confirm before place order
-public function confirm()
+// For "Buy Now" functionality, we can create a separate method that creates an order directly from a single product without going through the cart.
+public function storeNow(Request $request)
 {
+    $validated = $request->validate([
+        'product_id' => 'required|exists:products,product_id',
+        'quantity'   => 'required|integer|min:1',
+    ]);
+
+    
+    return redirect()->route('orders.confirm', [ 'product_id' => $request->product_id,
+        'quantity'   => $request->quantity,]);
+}
+//need confirm order page before store order, to show order summary and confirm before place order
+public function confirm(Request $request) 
+{
+    if ($request->has('product_id')) {
+        $product = Product::findOrFail($request->product_id);
+        $quantity = $request->quantity ?? 1;
+
+        return view('orders.confirm', [
+            'items'      => collect([['product' => $product, 'quantity' => $quantity, 'product_id' => $product->product_id]]),
+            'is_buy_now' => true,
+            'product_id' => $product->product_id,
+            'quantity'   => $quantity,
+        ]);
+    }
+
     $cart = Auth::user()->cart()->with('items.product')->first();
 
     if (!$cart || $cart->items->isEmpty()) {
-        return redirect()->route('carts.index')
-                       ->with('error', 'Cart is empty.');
+        return redirect()->route('carts.index')->with('error', 'Cart is empty.');
     }
 
     return view('orders.confirm', compact('cart'));
@@ -203,17 +232,23 @@ public function confirm()
 {
     $order = Auth::user()->orders()->findOrFail($id);
 
-    if ($order->isPaid()) {
-        return redirect()->back()
-                       ->with('error', 'Order already paid.');
+     // update old  payment record instead of creating new one.
+    $payment = $order->payments()->where('status', 'unpaid')->first();
+    
+    if ($payment) {
+        $payment->update([
+            'status'       => 'paid',
+            'method'       => 'manual',
+            'payment_date' => now(),
+        ]);
+    } else {
+        $order->payments()->create([
+            'status'       => 'paid',
+            'method'       => 'manual',
+            'amount'       => $order->total_amount,
+            'payment_date' => now(),
+        ]);
     }
-
-    $order->payments()->create([
-        'status'       => 'paid',
-        'method'       => 'manual',
-        'amount'       => $order->total_amount,
-        'payment_date' => now(),
-    ]);
 
     $order->markAsProcessing();
 
@@ -223,15 +258,27 @@ public function confirm()
 
 public function cancel(string $id)
 {
-    $order = Auth::user()->orders()->findOrFail($id);
-
-    if ($order->status !== 'pending') {
-        return redirect()->back()
-                       ->with('error', 'Only pending orders can be cancelled.');
+    $order = Auth::user()->orders()->with('items.product')->findOrFail($id);
+    //allow to cancel befor shipping
+    if (!in_array(strtolower($order->status), ['pending', 'processing', 'packing'])) {
+        return redirect()->back()->with('error', 'Cannot cancel order in this stage.');
     }
-
-    $order->markAsCancelled();
-
+    if (strtolower($order->payment_status) === 'paid') {
+        $order->payment_status = 'refunded'; // แก้ตรงนี้ให้เป็น refunded
+        $order->payments()->where('status', 'paid')->update(['status' => 'refunded']);
+    } else {
+        $order->payment_status = 'cancelled';
+    }
+    //restock
+    foreach ($order->items as $item) {
+        if ($item->product) {
+            $item->product->increment('stock_number', $item->quantity);
+        }
+    }
+    
+    //update
+    $order->status = 'cancelled';
+    $order->save();
     return redirect()->route('orders.index')
                      ->with('success', 'Order cancelled successfully.');
 }

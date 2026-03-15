@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Payment;
-
+use App\Models\Order;
 class PaymentController extends Controller
 {
     /**
@@ -14,9 +14,13 @@ class PaymentController extends Controller
     {
         $payments = Payment::whereHas('order', function ($query) {
                 $query->where('user_id', Auth::id());
-            })->with('order')->get();
-
-        return view('payments.index', compact('payments'));
+            })->where('status', 'paid') ->with('order')->get();
+        $unpaidOrders = Auth::user()->orders()
+    ->whereIn('status', ['pending', 'cancelled'])
+    ->where('payment_status', '!=', 'paid')
+    ->with('items.product')
+    ->get();
+        return view('payments.index', compact('payments', 'unpaidOrders'));
     }
 
     /**
@@ -39,6 +43,7 @@ class PaymentController extends Controller
             'order_id' => 'required|exists:orders,order_id',
             'amount'   => 'required|numeric',
             'method'   => 'required|string',
+        
             //no need to validate status as it will be set to pending by default
             //'status'   => 'required|string',
         ]);
@@ -46,10 +51,31 @@ class PaymentController extends Controller
         $validatedData['status'] = 'paid'; // Default status is pending
 
         $order = Auth::user()->orders()->findOrFail($validatedData['order_id']);
-    
-        //keep the order in pending status until payment is completed, so we will not update order status here
-        $payment = $order->payments()->create($validatedData);
-        $order->markAsProcessing();
+
+        // Update payment record for the order instead of creating a new one
+        $payment = $order->payments()->where('status', 'unpaid')->first();
+        if ($payment) {
+    // มี record เดิม → update
+    $payment->update([
+        'status'       => 'paid',
+        'method'       => $validatedData['method'],
+        'payment_date' => now(),
+    ]);
+
+} else {
+    // ไม่มี record เดิม → create ใหม่
+    $payment = $order->payments()->create([
+        'amount'       => $validatedData['amount'],
+        'method'       => $validatedData['method'],
+        'status'       => 'paid',
+        'payment_date' => now(),
+    ]);
+}
+
+   
+    Order::where('order_id', $order->order_id)->update(['payment_status' => 'paid']);
+    $order->markAsProcessing();
+  
         
         //use getKey() to get the primary key of the newly created payment record, which is payment_id in this case, and pass it to the route for showing payment details
         return redirect()->route('payments.show', $payment->getKey())
@@ -137,15 +163,33 @@ class PaymentController extends Controller
      */
     public function markFailed(string $id)
     {
+        //order and item prepare for restock
         $payment = Payment::where('payment_id', $id)
-                         ->where('user_id', Auth::id())
-                         ->firstOrFail();
+        ->whereHas('order', function ($query) {
+            $query->where('user_id', Auth::id());
+        })
+        ->with('order.items.product')
+        ->firstOrFail();
+        
+        // 1. update payment
+    $payment->update([
+        'status' => 'failed'
+    ]);
 
-        $payment->markAsFailed();
+    // 2. update order
+    $order = $payment->order;
+    $order->update([
+        'status' => 'cancelled', 
+        'payment_status' => 'failed'
+    ]);
 
-        // Mark order as failed when payment fails and restore product stock
-        $payment->order->markAsFailed();
-        $payment->order->restoreProductStock();
+    // 3. Restore Stock by column stock_number
+    foreach ($order->items as $item) {
+        if ($item->product) {
+            // use increment for re-stock
+            $item->product->increment('stock_number', $item->quantity);
+        }
+    }
 
         return redirect()->route('payments.index')->with('warning', 'Payment marked as failed.');
     }

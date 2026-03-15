@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('phone_number',10)->nullable();//add phone number
             $table->text('address')->nullable(); //add address
             $table->date('birthdate')->nullable(); //add birthdate
+            $table->string('role')->default('customer');
             $table->rememberToken();
             $table->timestamps();
         });

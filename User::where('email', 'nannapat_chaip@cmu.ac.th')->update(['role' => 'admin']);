@@ -1,0 +1,13 @@
+[90m= [39m[34;4mIlluminate\Database\Eloquent\Collection[39;24m {#1556
+    [34mall[39m: [
+      [34;4mApp\Models\User[39;24m {#6561
+        [34memail[39m: "[32mtest@example.com[39m",
+        [34mrole[39m: "[32mcustomer[39m",
+      },
+      [34;4mApp\Models\User[39;24m {#6560
+        [34memail[39m: "[32mnannapat_chaip@cmu.ac.th[39m",
+        [34mrole[39m: "[32mcustomer[39m",
+      },
+    ],
+  }
+
