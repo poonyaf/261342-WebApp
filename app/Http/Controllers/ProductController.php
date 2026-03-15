@@ -16,7 +16,8 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products =Product::with('tags')->get();
+        //change to this so people didn't reg can see
+        $products = Product::with('tags')->where('stock_number', '>', 0)->get();
         return view('products.index', compact('products'));
     }
 
@@ -67,7 +68,7 @@ class ProductController extends Controller
         $inWishlist = Auth::check()? $product->wishlists()->where('user_id', Auth::id())->exists() : false;
     return view('products.show', compact('product', 'inWishlist'));
     }
-
+    
     /**
      * Show the form for editing the specified resource.
      */

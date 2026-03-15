@@ -15,6 +15,24 @@ use Illuminate\Support\Facades\Response;
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/', [ProductController::class, 'index'])->name('products.index');
+Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+Route::get('/products/{id}', [ProductController::class, 'show'])->name('products.show');
+Route::get('/product-photo/{filename}', [ProductController::class, 'showPhoto'])->name('product.photo');
+//call picture
+Route::get('/product-photo/{filename}', function ($filename) {
+    // กำหนด path ที่เก็บรูปสินค้า (ตรวจสอบว่าในเครื่องเก็บไว้ที่ไหน)
+    $path = 'products/' . $filename;
+
+    if (!Storage::disk('public')->exists($path)) {
+        abort(404);
+    }
+
+    $file = Storage::disk('public')->get($path);
+    $type = Storage::disk('public')->mimeType($path);
+
+    return Response::make($file, 200)->header("Content-Type", $type);
+})->name('product.photo');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -26,7 +44,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::patch('/profile/photo/update', [UserController::class, 'updateProfilePhoto'])->name('profile.photo.update');
     Route::get('/profile/photo/{filename}', [UserController::class, 'showProfilePhoto'])->where('filename', '.*')->name('user.photo'); //to read
-    Route::resource('products', ProductController::class);
+   
     
      // Cart
     Route::get('/carts', [CartController::class, 'index'])->name('carts.index');
@@ -57,21 +75,6 @@ Route::post('/wishlists', [WishlistController::class, 'store'])->name('wishlist.
 //when user click the wishlist button, it will toggle the wishlist status of the product
 Route::post('/wishlists/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
 Route::delete('/wishlists/{wishlist}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
-
-//call picture
-Route::get('/product-photo/{filename}', function ($filename) {
-    // กำหนด path ที่เก็บรูปสินค้า (ตรวจสอบว่าในเครื่องเก็บไว้ที่ไหน)
-    $path = 'products/' . $filename;
-
-    if (!Storage::disk('public')->exists($path)) {
-        abort(404);
-    }
-
-    $file = Storage::disk('public')->get($path);
-    $type = Storage::disk('public')->mimeType($path);
-
-    return Response::make($file, 200)->header("Content-Type", $type);
-})->name('product.photo');
     
 });
 
