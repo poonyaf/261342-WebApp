@@ -1,3 +1,39 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    /* Pink Theme */
+    --pinkPage-primary: #ECA1B6;
+    --pinkPage-secondary: #D67B91;
+    --pinkPage-accent: #F9C0D9;
+    --pinkPage-neutral-Brown: #7B4A3A;
+    --pinkPage-neutral-1: #FFF8FA;
+    --pinkPage-neutral-2: #FCEDEE;
+    --pinkPage-favorite-star: #BD8083;
+
+    /* Brown Theme */
+    --brownPage-primary: #7B4A3A;
+    --brownPage-secondary: #A0522D;
+    --brownPage-accent-pink: #ECA1B6;
+    --brownPage-favorite-star: #eb7eb1;
+
+    /* Semantic & Shared */
+    --stellar-white: #FFFFFF;
+    --bg-light: #F5F5F5;
+    --bg-dark: #333333;
+    --color-success: #4CAF50;
+    --color-error: #d4183d;
+    
+    /* Spacing & Radius */
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+  }
+
+  body {
+    @apply antialiased text-[#333333] bg-[#F5F5F5];
+    font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+  }
+}
