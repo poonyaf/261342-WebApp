@@ -50,8 +50,9 @@
 
                             {{-- รวม --}}
                             <p class="font-semibold">฿{{ number_format($item->price_at_purchase * $item->quantity, 2) }}</p>
-                        </div>
-                    @endforeach
+                            </div>
+                            
+                        @endforeach
                 </div>
 
                 {{-- สรุปราคา --}}
@@ -67,6 +68,11 @@
                     <div class="flex justify-between font-bold text-lg pt-2 border-t">
                         <span>รวมทั้งหมด</span>
                         <span class="text-pink-500">฿{{ number_format($order->total_amount, 2) }}</span>
+                    </div>
+
+                    <div class="mt-4 p-4 rounded-2xl border border-gray-100 bg-gray-50">
+                        <p class="text-xs tracking-wide text-gray-400 uppercase mb-1">Shipping Address</p>
+                        <p class="font-medium text-gray-800">{{ $order->address }}</p>
                     </div>
                 </div>
 
