@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\Tag;
 use Illuminate\Support\Facades\Storage; // import storage facade for handling file uploads
 use App\Models\Wishlist;
 use Illuminate\Support\Facades\Auth; 
@@ -15,16 +16,30 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input('search'); // adding 'search' for product name
+        $search = $request->input('search');
+        $category = $request->input('category');
 
         $query = Product::query();
 
-        if ($search) { //add search functionality condition
-            $query->where('name', 'like', '%' . $search . '%');
+        if ($search) {
+            $query->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('description', 'like', '%' . $search . '%');
+        }
+
+        if ($category) {
+            $query->whereHas('tags', function ($q) use ($category) {
+                $q->where('name', $category);
+            });
         }
 
         $products = $query->with('tags')->get();
-        return view('products.index', compact('products', 'search'));
+        
+        // Get all categories (tags) used in products
+        $categories = Tag::whereHas('products', function ($q) {
+            $q->where('taggable_type', 'App\\Models\\Product');
+        })->pluck('name')->unique();
+
+        return view('products.index', compact('products', 'search', 'category', 'categories'));
     }
 
     /**

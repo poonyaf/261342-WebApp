@@ -36,20 +36,48 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Search Bar -->
             <div class="mb-6">
-                <form action="{{ route('products.index') }}" method="GET" class="flex gap-2">
+                <form action="{{ route('products.index') }}" method="GET" class="flex gap-2 flex-wrap">
                     <input type="text" name="search" placeholder="Search products by name or description..."
                            value="{{ $search ?? '' }}"
-                           class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                           class="flex-1 min-w-64 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    @if ($category ?? false)
+                        <input type="hidden" name="category" value="{{ $category }}">
+                    @endif
                     <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                         Search
                     </button>
                     @if ($search ?? false)
-                        <a href="{{ route('products.index') }}" class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
-                            Clear
+                        @php
+                            $clearUrl = route('products.index');
+                            if ($category ?? false) {
+                                $clearUrl .= '?category=' . urlencode($category);
+                            }
+                        @endphp
+                        <a href="{{ $clearUrl }}" class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+                            Clear Search
                         </a>
                     @endif
                 </form>
             </div>
+
+            <!-- Category Filter --> 
+            @if ($categories->count() > 0)
+                <div class="mb-8">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">หมวดหมู่สินค้า</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <a href="{{ route('products.index', ['search' => $search ?? '']) }}"
+                           class="py-2 px-4 rounded-full transition {{ !($category ?? false) ? 'bg-pink-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600' }}">
+                            ทั้งหมด
+                        </a>
+                        @foreach ($categories as $cat)
+                            <a href="{{ route('products.index', ['category' => $cat, 'search' => $search ?? '']) }}"
+                               class="py-2 px-4 rounded-full transition {{ ($category ?? false) === $cat ? 'bg-pink-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600' }}">
+                                {{ $cat }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
 
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 @forelse ($products as $product)
