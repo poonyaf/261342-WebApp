@@ -67,7 +67,7 @@ class ProductController extends Controller
 
         // Handle image upload
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'public');
+            $imagePath = cloudinary()->upload($request->file('image')->getRealPath())->getSecurePath();
             $validatedData['image'] = $imagePath;
         }
 
@@ -117,11 +117,8 @@ class ProductController extends Controller
         // Handle image upload
         if ($request->hasFile('image')) {
             // Delete old image if exists
-            if ($product->image && Storage::disk('public')->exists($product->image)) {
-                Storage::disk('public')->delete($product->image);
-            }
-            $imagePath = $request->file('image')->store('products', 'public');
-            $validatedData['image'] = $imagePath;
+            $imagePath = cloudinary()->upload($request->file('image')->getRealPath())->getSecurePath();
+$validatedData['image'] = $imagePath;
         }
 
         $product->update($validatedData);
