@@ -19,6 +19,10 @@ Route::get('/', [ProductController::class, 'index'])->name('home');
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{id}', [ProductController::class, 'show'])->name('products.show');
 Route::get('/product-photo/{filename}', [ProductController::class, 'showPhoto'])->name('product.photo');
+Route::get('/upload-images', function () {
+    $files = glob(storage_path('app/public/products/*'));
+    return response()->json(['files' => $files, 'count' => count($files)]);
+});
 //call picture
 Route::get('/product-photo/{filename}', function ($filename) {
     // กำหนด path ที่เก็บรูปสินค้า (ตรวจสอบว่าในเครื่องเก็บไว้ที่ไหน)
