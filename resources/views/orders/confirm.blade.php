@@ -9,6 +9,20 @@
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white rounded-2xl shadow p-6 space-y-6">
 
+            @php
+                $shippingFee = 50;
+
+                if (isset($items)) {
+                    // Buy Now flow
+                    $subtotal = $items->sum(fn($i) => $i['product']->price * $i['quantity']);
+                } else {
+                    // Cart flow
+                    $subtotal = $cart->items->sum(fn($i) => $i->product->price * $i->quantity);
+                }
+
+                $grandTotal = $subtotal + $shippingFee;
+            @endphp
+
                 <form method="POST" action="{{ route('orders.store') }}">
                     @csrf
 
@@ -104,15 +118,15 @@
                     <div class="border-t pt-4 space-y-2">
                         <div class="flex justify-between text-sm text-gray-500">
                             <span>ยอดสินค้า</span>
-                            <span>฿{{ number_format($total, 2) }}</span>
+                            <span>฿{{ number_format($subtotal, 2) }}</span>
                         </div>
                         <div class="flex justify-between text-sm text-gray-500">
                             <span>ค่าจัดส่ง</span>
-                            <span>฿50.00</span>
+                            <span>฿{{ number_format($shippingFee, 2) }}</span>
                         </div>
                         <div class="flex justify-between font-bold text-lg pt-2 border-t">
                             <span>รวมทั้งหมด</span>
-                            <span class="text-pink-500">฿{{ number_format($total, 2) }}</span>
+                            <span class="text-pink-500">฿{{ number_format($grandTotal, 2) }}</span>
                         </div>
                     </div>
 
