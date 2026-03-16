@@ -1,14 +1,13 @@
-
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('ชำระเงิน') }}
+            {{ __('Payment') }}
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white rounded-2xl shadow p-6 space-y-6">
+    <div class="page-wrap">
+        <div class="container">
+            <div class="card card-pad space-y-6">
                 @php
                     $subtotal = $order->items->sum(fn($i) => $i->price_at_purchase * $i->quantity);
                     $shippingFee = $order->shipping_fee ?? 50; // fallback just in case old orders have null
@@ -17,14 +16,14 @@
 
                 {{-- รายละเอียด order --}}
                 <div>
-                    <p class="text-sm text-gray-500">หมายเลขคำสั่งซื้อ</p>
+                    <p class="text-sm text-gray-500">Order Number</p>
                     <p class="font-bold text-2xl">#{{ $order->order_id }}</p>
                     
                 </div>
 
-                {{-- รายการสินค้า --}}
+                {{-- Product List --}}
                 <div class="border-t pt-4 space-y-4">
-                    <h3 class="font-semibold text-lg">รายการสินค้า</h3>
+                    <h3 class="font-semibold text-lg">Product List</h3>
                     @foreach($order->items as $item)
                         <div class="flex items-center gap-4">
                             @if(str_starts_with($item->product->image, 'http'))
@@ -41,25 +40,25 @@
                     @endforeach
                 </div>
 
-                {{-- สรุปราคา --}}
+                {{-- Price Summary --}}
                 <div class="border-t pt-4 space-y-2">
                     <div class="flex justify-between text-sm text-gray-500">
-                        <span>ยอดสินค้า</span>
+                        <span>Order Price</span>
                         <span>฿{{ number_format($subtotal, 2) }}</span>
                     </div>
 
                     <div class="flex justify-between text-sm text-gray-500">
-                        <span>ค่าจัดส่ง</span>
+                        <span>Shipping Fee</span>
                         <span>฿{{ number_format($shippingFee, 2) }}</span>
                     </div>
 
                     <div class="flex justify-between font-bold text-lg pt-2 border-t">
-                        <span>รวมทั้งหมด</span>
+                        <span>Total</span>
                         <span class="text-pink-500">฿{{ number_format($grandTotal, 2) }}</span>
                     </div>
                 </div>
 
-               {{-- form ชำระเงิน --}}
+               {{-- Payment Method --}}
                 @if($order->status === 'pending' && !$order->isPaid())
                 <form method="POST" action="{{ route('payments.store') }}" class="border-t pt-4 space-y-4">
                     @csrf
@@ -67,13 +66,12 @@
                     <input type="hidden" name="amount" value="{{ $grandTotal }}">
 
                     <div>
-                        <label class="block text-sm text-gray-600 mb-1">วิธีชำระเงิน</label>
-                        <select name="method"
-                            class="w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+                        <label class="block text-sm text-gray-600 mb-1">Payment Method</label>
+                        <select name="method" class="select">
                             <option value="promptpay">PromptPay</option>
-                            <option value="credit_card">บัตรเครดิต</option>
-                            <option value="bank_transfer">โอนเงิน</option>
-                            <option value="cash_on_delivery">เก็บเงินปลายทาง</option>
+                            <option value="credit_card">Credit Card</option>
+                            <option value="bank_transfer">Transfer</option>
+                            <option value="cash_on_delivery">Cash on Delivery</option>
                         </select>
                         @error('method') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
@@ -81,24 +79,22 @@
                     <div class="flex justify-between items-center pt-2">
                         <a href="{{ route('orders.show', $order->order_id) }}"
                            class="text-sm text-gray-500 hover:underline">
-                            ← กลับไปคำสั่งซื้อ
+                            ← Back
                         </a>
-                        <button type="submit"
-                            class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm">
-                            ยืนยันชำระเงิน
+                        <button type="submit" class="btn-success">
+                            Confirm
                         </button>
                     </div>
                 </form>
                 @endif
 
-                {{-- ปุ่มยกเลิก --}}
+                {{-- Cancel Button --}}
                 @if($order->status === 'pending')
                 <form method="POST" action="{{ route('orders.cancel', $order->order_id) }}" class="flex justify-end mt-2">
                     @csrf
                     @method('PATCH')
-                    <button type="submit"
-                        class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm">
-                        ยกเลิก
+                    <button type="submit" class="btn-danger">
+                        Cancel
                     </button>
                 </form>
                 @endif

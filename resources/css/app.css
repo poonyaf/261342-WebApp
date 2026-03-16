@@ -30,10 +30,76 @@
     --radius-lg: 0.75rem;
     --radius-xl: 1rem;
     --radius-2xl: 1.5rem;
+
+    /* ===== Theme tokens (Use across the whole web) ===== */
+    --primary: var(--pinkPage-primary);
+    --secondary: var(--pinkPage-secondary);
+    --accent: var(--pinkPage-accent);
+    --neutral: var(--pinkPage-neutral-Brown);
+
+    --bg: var(--bg-light);
+    --surface: var(--stellar-white);
+    --text: #333333;
+
+    --favorite-star: var(--pinkPage-favorite-star);
+  }
+
+  /* class="theme-brown" at body or html */ 
+  .theme-brown {
+    --primary: var(--brownPage-primary);
+    --secondary: var(--brownPage-secondary);
+    --accent: var(--brownPage-accent-pink);
+    --neutral: var(--brownPage-primary);
+    --favorite-star: var(--brownPage-favorite-star);
   }
 
   body {
-    @apply antialiased text-[#333333] bg-[#F5F5F5];
+    @apply antialiased;
+    background: var(--bg);
+    color: var(--text);
     font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+  }
+}
+
+@layer components {
+  .page-wrap { @apply py-10; }
+  .container { @apply max-w-4xl mx-auto sm:px-6 lg:px-8; }
+
+  .card {
+    @apply shadow;
+    background: var(--surface);
+    border-radius: var(--radius-2xl);
+  }
+
+  .card-pad { @apply p-6; }
+
+  .divider { @apply border-t; border-color: color-mix(in srgb, var(--text) 10%, transparent); }
+
+  .h1 { @apply text-xl font-semibold; color: var(--text); }
+  .h2 { @apply text-lg font-semibold; color: var(--text); }
+
+  .muted { @apply text-sm; color: color-mix(in srgb, var(--text) 60%, transparent); }
+
+  .btn { @apply inline-flex items-center justify-center px-4 py-2 text-sm font-semibold transition; border-radius: var(--radius-xl); }
+  .btn-primary { @apply btn text-white; background: var(--primary); }
+  .btn-primary:hover { background: var(--secondary); }
+
+  .btn-success { @apply btn text-white; background: var(--color-success); }
+  .btn-success:hover { filter: brightness(0.95); }
+
+  .btn-danger { @apply btn text-white; background: var(--color-error); }
+  .btn-danger:hover { filter: brightness(0.95); }
+
+  .badge { @apply px-3 py-1 rounded-full text-xs font-semibold; }
+
+  .input, .select {
+    @apply w-full border p-3 text-sm focus:outline-none;
+    border-radius: var(--radius-lg);
+    border-color: color-mix(in srgb, var(--text) 15%, transparent);
+    background: var(--surface);
+  }
+  .input:focus, .select:focus {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 35%, transparent);
+    border-color: color-mix(in srgb, var(--primary) 65%, transparent);
   }
 }
