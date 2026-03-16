@@ -19,6 +19,10 @@ Route::get('/', [ProductController::class, 'index'])->name('home');
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{id}', [ProductController::class, 'show'])->name('products.show');
 Route::get('/product-photo/{filename}', [ProductController::class, 'showPhoto'])->name('product.photo');
+Route::get('/upload-images', function () {
+    $files = glob(storage_path('app/public/products/*'));
+    return response()->json(['files' => $files, 'count' => count($files)]);
+});
 //call picture
 Route::get('/product-photo/{filename}', function ($filename) {
     // กำหนด path ที่เก็บรูปสินค้า (ตรวจสอบว่าในเครื่องเก็บไว้ที่ไหน)
@@ -85,7 +89,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::post('/admin/users/add-admin', [AdminController::class, 'storeAdmin'])->name('admin.users.storeAdmin');
     Route::delete('/users/{id}', [AdminController::class, 'destroy'])->name('admin.users.destroy');
     Route::get('/products', [AdminController::class, 'products'])->name('admin.products');
+    Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
+    Route::patch('/products/{id}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('/products/{id}', [AdminController::class, 'destroyProduct'])->name('admin.products.destroy');
+    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create'); 
+    Route::post('/products', [ProductController::class, 'store'])->name('products.store'); 
     Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
     Route::patch('/orders/{id}/packing', [AdminController::class, 'markAsPacking'])->name('admin.orders.packing');
     Route::patch('/orders/{id}/delivering', [AdminController::class, 'markAsDelivering'])->name('admin.orders.delivering');

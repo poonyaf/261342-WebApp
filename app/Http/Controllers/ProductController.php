@@ -8,7 +8,8 @@ use App\Models\Tag;
 use Illuminate\Support\Facades\Storage; // import storage facade for handling file uploads
 use App\Models\Wishlist;
 use Illuminate\Support\Facades\Auth; 
-
+use Cloudinary\Cloudinary as CloudinaryClient;
+use Cloudinary\Configuration\Configuration;
 class ProductController extends Controller
 {
     /**
@@ -66,10 +67,11 @@ class ProductController extends Controller
         ]);
 
         // Handle image upload
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'public');
-            $validatedData['image'] = $imagePath;
-        }
+       if ($request->hasFile('image')) {
+    $cloudinary = new CloudinaryClient(env('CLOUDINARY_URL'));
+    $result = $cloudinary->uploadApi()->upload($request->file('image')->getRealPath());
+    $validatedData['image'] = $result['secure_url'];
+}
 
         Product::create($validatedData);
 
@@ -115,14 +117,11 @@ class ProductController extends Controller
         ]);
 
         // Handle image upload
-        if ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($product->image && Storage::disk('public')->exists($product->image)) {
-                Storage::disk('public')->delete($product->image);
-            }
-            $imagePath = $request->file('image')->store('products', 'public');
-            $validatedData['image'] = $imagePath;
-        }
+       if ($request->hasFile('image')) {
+    $cloudinary = new CloudinaryClient(env('CLOUDINARY_URL'));
+    $result = $cloudinary->uploadApi()->upload($request->file('image')->getRealPath());
+    $validatedData['image'] = $result['secure_url'];
+}
 
         $product->update($validatedData);
 
