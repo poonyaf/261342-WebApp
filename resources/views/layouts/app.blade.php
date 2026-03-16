@@ -15,12 +15,12 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen theme-pink" style="background: var(--bg); color: var(--text);">
+        <div class="min-h-screen" style="background: var(--bg); color: var(--text);">
             @include('layouts.navigation')
 
             <!-- Page Heading -->
             @isset($header)
-                <header class="shadow border-b" style="background: var(--surface); border-color: color-mix(in srgb, var(--text) 10%, transparent);">
+                <h2 class="font-semibold text-xl leading-tight" style="color: var(--text);">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
