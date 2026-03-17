@@ -12,7 +12,7 @@
                 {{-- header --}}
                 <div class="flex justify-between items-center">
                     <div>
-                        <p class="text-sm text-gray-500">หมายเลขคำสั่งซื้อ</p>
+                        <p class="text-sm text-gray-500">Order Number</p>
                         <p class="font-bold text-2xl">#{{ $order->order_id }}</p>
                         <p class="text-sm text-gray-400">{{ $order->order_date->format('d M Y H:i') }}</p>
                     </div>
@@ -40,7 +40,7 @@
                     @endphp
 
                     <div class="border-t pt-4">
-                        <h3 class="font-semibold text-lg mb-3">ที่อยู่จัดส่ง</h3>
+                        <h3 class="font-semibold text-lg mb-3">Shipping Address</h3>
                         @if($canEditAddress)
                             <textarea name="address" rows="3"
                                 class="w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300"
@@ -48,7 +48,7 @@
                         @else
                             <p class="text-gray-600 text-sm">{{ $order->address ?? Auth::user()->address ?? 'ไม่มีที่อยู่' }}</p>
                             @if($order->status === 'pending')
-                                <p class="text-red-400 text-xs mt-1">หมดเวลาแก้ไขที่อยู่แล้ว (เกิน 24 ชม.)</p>
+                                <p class="text-red-400 text-xs mt-1">Out of Time (more than 24 hr.)</p>
                             @endif
                         @endif
                     </div>
@@ -95,15 +95,15 @@
                     {{-- สรุปราคา --}}
                     <div class="border-t pt-4 space-y-2">
                         <div class="flex justify-between text-sm text-gray-500">
-                            <span>ยอดสินค้า</span>
+                            <span>Price</span>
                             <span>฿{{ number_format($order->items->sum(fn($i) => $i->price_at_purchase * $i->quantity), 2) }}</span>
                         </div>
                         <div class="flex justify-between text-sm text-gray-500">
-                            <span>ค่าจัดส่ง</span>
+                            <span>Shipping Fee</span>
                             <span>฿50.00</span>
                         </div>
                         <div class="flex justify-between font-bold text-lg pt-2 border-t">
-                            <span>รวมทั้งหมด</span>
+                            <span>Total</span>
                             <span class="text-pink-500">฿{{ number_format($order->total_amount, 2) }}</span>
                         </div>
                     </div>
@@ -111,26 +111,26 @@
                     {{-- ปุ่ม --}}
                     <div class="border-t pt-4 flex justify-between items-center">
                         <a href="{{ route('orders.index') }}" class="text-sm text-gray-500 hover:underline">
-                            ← กลับไปคำสั่งซื้อทั้งหมด
+                            ← Back
                         </a>
                         <div class="flex gap-2">
                             @if($order->status === 'pending')
                                 <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm">
-                                    บันทึก
+                                    Save
                                 </button>
                             @endif
                             @if($order->status === 'pending' && !$order->isPaid())
                                 <a href="{{ route('orders.pay', $order->order_id) }}"
                                    onclick="event.preventDefault(); document.getElementById('pay-form').submit();"
                                    class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm">
-                                    ยืนยันชำระเงิน
+                                    Payment Confirmation
                                 </a>
                             @endif
                             @if($order->status === 'pending')
                                 <a href="{{ route('orders.cancel', $order->order_id) }}"
                                    onclick="event.preventDefault(); document.getElementById('cancel-form').submit();"
                                    class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm">
-                                    ยกเลิก
+                                    Cancel
                                 </a>
                             @endif
                         </div>

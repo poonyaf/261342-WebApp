@@ -9,6 +9,20 @@
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white rounded-2xl shadow p-6 space-y-6">
 
+            @php
+                $shippingFee = 50;
+
+                if (isset($items)) {
+                    // Buy Now flow
+                    $subtotal = $items->sum(fn($i) => $i['product']->price * $i['quantity']);
+                } else {
+                    // Cart flow
+                    $subtotal = $cart->items->sum(fn($i) => $i->product->price * $i->quantity);
+                }
+
+                $grandTotal = $subtotal + $shippingFee;
+            @endphp
+
                 <form method="POST" action="{{ route('orders.store') }}">
                     @csrf
 
@@ -27,10 +41,10 @@
 
                     {{-- ข้อมูลผู้รับ --}}
                     <div class="space-y-4">
-                        <h3 class="font-semibold text-lg">ข้อมูลผู้รับ</h3>
+                        <h3 class="font-semibold text-lg">Recipient Information</h3>
 
                         <div>
-                            <label class="block text-sm text-gray-600 mb-1">ชื่อ-นามสกุล</label>
+                            <label class="block text-sm text-gray-600 mb-1">Full Name</label>
                             <input type="text" name="name"
                                 value="{{ old('name', Auth::user()->name) }}"
                                 class="w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
@@ -38,7 +52,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm text-gray-600 mb-1">ที่อยู่จัดส่ง</label>
+                            <label class="block text-sm text-gray-600 mb-1">Shipping Address</label>
                             <textarea name="address" rows="3"
                                 class="w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300"
                                 placeholder="กรอกที่อยู่จัดส่ง">{{ old('address', Auth::user()->address) }}</textarea>
@@ -46,7 +60,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm text-gray-600 mb-1">เบอร์โทรศัพท์</label>
+                            <label class="block text-sm text-gray-600 mb-1">Telephone Number</label>
                             <input type="text" name="phone"
                                 value="{{ old('phone', Auth::user()->phone_number) }}"
                                 class="w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
@@ -54,7 +68,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm text-gray-600 mb-1">วิธีชำระเงิน</label>
+                            <label class="block text-sm text-gray-600 mb-1">Payment Method</label>
                             <select name="payment_method"
                                 class="w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
                                 <option value="promptpay" {{ old('payment_method') == 'promptpay' ? 'selected' : '' }}>PromptPay</option>
@@ -68,7 +82,7 @@
 
                     {{-- รายการสินค้า --}}
                     <div class="border-t pt-4 space-y-4">
-                        <h3 class="font-semibold text-lg">รายการสินค้า</h3>
+                        <h3 class="font-semibold text-lg">Product List</h3>
 
                         @php
                             $displayItems = isset($is_buy_now) && $is_buy_now
@@ -103,16 +117,16 @@
 
                     <div class="border-t pt-4 space-y-2">
                         <div class="flex justify-between text-sm text-gray-500">
-                            <span>ยอดสินค้า</span>
-                            <span>฿{{ number_format($total, 2) }}</span>
+                            <span>Price</span>
+                            <span>฿{{ number_format($subtotal, 2) }}</span>
                         </div>
                         <div class="flex justify-between text-sm text-gray-500">
-                            <span>ค่าจัดส่ง</span>
-                            <span>฿50.00</span>
+                            <span>Shipping Fee</span>
+                            <span>฿{{ number_format($shippingFee, 2) }}</span>
                         </div>
                         <div class="flex justify-between font-bold text-lg pt-2 border-t">
-                            <span>รวมทั้งหมด</span>
-                            <span class="text-pink-500">฿{{ number_format($total, 2) }}</span>
+                            <span>Total</span>
+                            <span class="text-pink-500">฿{{ number_format($grandTotal, 2) }}</span>
                         </div>
                     </div>
 
@@ -120,15 +134,15 @@
                     <div class="border-t pt-4 flex justify-between items-center">
                         @if(isset($is_buy_now) && $is_buy_now)
                             <a href="javascript:history.back()" class="text-sm text-gray-500 hover:underline">
-                                ← กลับไปสินค้า
+                                ← Back
                             </a>
                         @else
                             <a href="{{ route('carts.index') }}" class="text-sm text-gray-500 hover:underline">
-                                ← กลับไปตะกร้า
+                                ← Back to Cart
                             </a>
                         @endif
                         <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                            ยืนยันสั่งซื้อ
+                            Confirm 
                         </button>
                     </div>
 

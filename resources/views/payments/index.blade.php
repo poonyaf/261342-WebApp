@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl leading-tight" style="color: var(--secondary);">
             {{ __('Payments') }}
         </h2>
     </x-slot>
@@ -9,7 +9,10 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
             {{-- Unpaid Orders --}}
-            @php $unpaid = $unpaidOrders->where('status', 'pending'); @endphp
+            @php 
+            $unpaid = $unpaidOrders->where('status', 'pending'); 
+            @endphp
+            
             @if($unpaid->isNotEmpty())
             <div>
                 <h2 class="text-lg font-semibold text-gray-700 mb-4">Unpaid Orders</h2>

@@ -5,14 +5,14 @@
     <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-0">
 
-            {{-- รูปสินค้า --}}
+            {{-- Image --}}
             <div class="bg-gray-50 flex items-center justify-center p-6">
                 @if($product->image)
     @if(str_starts_with($product->image, 'http'))
-        {{-- ถ้าเป็นรูปจากเน็ต --}}
+        {{-- If from the Internet --}}
         <img src="{{ $product->image }}" class="w-full max-h-80 object-contain rounded-xl">
     @else
-        {{-- ถ้าเป็นรูปในเครื่อง (เรียกผ่าน Route) --}}
+        {{-- If from local device (calling via Route) --}}
         <img src="{{ route('product.photo', ['filename' => basename($product->image)]) }}" 
              class="w-full max-h-80 object-contain rounded-xl">
     @endif
@@ -20,7 +20,7 @@
 
             </div>
 
-            {{-- ข้อมูลสินค้า --}}
+            {{-- Product Info --}}
             <div class="p-6 flex flex-col justify-between">
 
                 {{-- tags --}}
@@ -30,16 +30,16 @@
                     @endforeach
                 </div>
 
-                {{-- ชื่อ --}}
+                {{-- Name --}}
                 <h1 class="text-xl font-bold text-gray-800">{{ $product->name }}</h1>
 
                 {{-- rating --}}
                 <div class="flex items-center mt-2 text-yellow-400 text-sm">
                     ⭐⭐⭐⭐☆
-                    <span class="text-gray-400 ml-2">(45 รีวิว)</span>
+                    <span class="text-gray-400 ml-2">(45 Reviews)</span>
                 </div>
 
-                {{-- ราคา --}}
+                {{-- Price --}}
                 <div class="mt-3 flex items-baseline gap-3">
                     <span class="text-2xl font-bold text-gray-800">฿{{ number_format($product->price, 2) }}</span>
                     <span class="text-gray-400 line-through text-sm">฿{{ number_format($product->price * 1.2, 2) }}</span>
@@ -49,11 +49,11 @@
                 <p class="mt-3 text-gray-500 text-sm leading-relaxed">{{ $product->description }}</p>
 
                 {{-- stock --}}
-                <p class="mt-2 text-xs text-gray-400">คงเหลือ {{ $product->stock_number }} ชิ้น</p>
+                <p class="mt-2 text-xs text-gray-400">Remaining {{ $product->stock_number }}</p>
 
                 {{-- quantity --}}
                 <div class="flex items-center gap-3 mt-4">
-                    <span class="text-sm text-gray-600">จำนวน:</span>
+                    <span class="text-sm text-gray-600">Amount:</span>
                     <div class="flex items-center border rounded-lg overflow-hidden">
                         <button onclick="changeQty(-1)" class="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600">−</button>
                         <input type="text" id="quantity" value="1" min="1" max="{{ $product->stock_number }}"
@@ -62,7 +62,7 @@
                     </div>
                 </div>
 
-                {{-- ปุ่ม --}}
+                {{-- Button --}}
                 <div class="flex gap-2 mt-6">
 
                     {{-- Wishlist --}}
@@ -89,7 +89,7 @@
                         <input type="hidden" name="product_id" value="{{ $product->product_id }}">
                         <input type="hidden" name="quantity" id="quantity-input" value="1">
                         <button type="submit" class="w-full h-12 border-2 border-pink-400 text-pink-500 rounded-xl hover:bg-pink-50 transition text-sm font-medium">
-                            🛒 ใส่ตะกร้า
+                            🛒 Add to Cart
                         </button>
                     </form>
 
@@ -99,7 +99,7 @@
                         <input type="hidden" name="product_id" value="{{ $product->product_id }}">
                         <input type="hidden" name="quantity" id="quantity-input-now" value="1">
                         <button type="submit" class="w-full h-12 bg-pink-400 hover:bg-pink-500 text-white rounded-xl transition text-sm font-medium">
-                            ⚡ ซื้อเลย
+                            ⚡ Buy Now
                         </button>
                     </form>
 

@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl leading-tight" style="color: var(--secondary);">
             {{ __('My Order') }}
         </h2>
     </x-slot>
@@ -18,7 +18,7 @@
                     {{-- header --}}
                     <div class="flex justify-between items-center mb-4">
                         <div>
-                            <p class="text-sm text-gray-500">หมายเลขคำสั่งซื้อ</p>
+                            <p class="text-sm text-gray-500">Order Number</p>
                             <p class="font-bold text-lg">#{{ $order->order_id }}</p>
                         </div>
                         <span @class([
@@ -61,15 +61,15 @@
                     {{-- สรุปราคา --}}
                     <div class="mt-4 pt-4 border-t space-y-1">
                         <div class="flex justify-between text-sm text-gray-500">
-                            <span>ยอดสินค้า</span>
+                            <span>Price</span>
                             <span>฿{{ number_format($order->items->sum(fn($i) => $i->price_at_purchase * $i->quantity), 2) }}</span>
                         </div>
                         <div class="flex justify-between text-sm text-gray-500">
-                            <span>ค่าจัดส่ง</span>
+                            <span>Shipping Fee</span>
                             <span>฿50.00</span>
                         </div>
                         <div class="flex justify-between font-bold text-lg pt-2 border-t">
-                            <span>รวมทั้งหมด</span>
+                            <span>Total</span>
                             <span class="text-pink-500">฿{{ number_format($order->total_amount, 2) }}</span>
                         </div>
                     </div>
@@ -78,13 +78,13 @@
                     <div class="mt-4 flex justify-end">
                         <a href="{{ route('orders.show', $order->order_id) }}"
                            class="text-sm text-blue-600 hover:underline">
-                            ดูรายละเอียด →
+                            For more information →
                         </a>
                     </div>
 
                 </div>
             @empty
-                <p class="text-gray-500 text-center">ยังไม่มีคำสั่งซื้อ</p>
+                <p class="text-gray-500 text-center">You haven't ordered yet. Let's go grab something!</p>
             @endforelse
 
         </div>

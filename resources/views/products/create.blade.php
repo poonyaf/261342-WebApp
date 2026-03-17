@@ -13,18 +13,18 @@
                     @csrf
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {{-- ฝั่งซ้าย: ข้อมูลพื้นฐาน --}}
+                        {{-- Left hand-side: Basic Information --}}
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ชื่อสินค้า</label>
-                                <input type="text" name="name" value="{{ old('name') }}" placeholder="กรอกชื่อสินค้า..."
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Name</label>
+                                <input type="text" name="name" value="{{ old('name') }}" placeholder="What is the product name..."
                                     class="w-full border-gray-200 dark:border-gray-700 rounded-xl p-3 text-sm focus:border-pink-500 focus:ring-pink-500 dark:bg-gray-900 dark:text-gray-100">
                                 @error('name') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">คำอธิบาย</label>
-                                <textarea name="description" rows="4" placeholder="รายละเอียดสินค้าแบบย่อ..."
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                                <textarea name="description" rows="4" placeholder="Brief description..."
                                     class="w-full border-gray-200 dark:border-gray-700 rounded-xl p-3 text-sm focus:border-pink-500 focus:ring-pink-500 dark:bg-gray-900 dark:text-gray-100">{{ old('description') }}</textarea>
                                 @error('description') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
@@ -37,7 +37,7 @@
                                     @error('price') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">จำนวนสต็อก</label>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stock Amount</label>
                                     <input type="number" name="stock_number" value="{{ old('stock_number') }}" min="0"
                                         class="w-full border-gray-200 dark:border-gray-700 rounded-xl p-3 text-sm focus:border-pink-500 focus:ring-pink-500 dark:bg-gray-900 dark:text-gray-100">
                                     @error('stock_number') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
@@ -45,10 +45,10 @@
                             </div>
                         </div>
 
-                        {{-- ฝั่งขวา: รูปภาพและแท็ก --}}
+                        {{-- Right hand-side: Image and Tag --}}
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">รูปภาพสินค้า</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image</label>
                                 <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-700 border-dashed rounded-xl hover:border-pink-400 transition-colors">
                                     <div class="space-y-1 text-center">
                                         <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
@@ -68,7 +68,7 @@
 
                             {{-- Tags Selector --}}
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">เลือกแท็กที่เกี่ยวข้อง</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Choose related tags</label>
                                 <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 border border-gray-100 dark:border-gray-700 rounded-xl shadow-inner">
                                     @foreach($tags as $tag)
                                         <label class="relative inline-flex items-center">
@@ -88,14 +88,14 @@
 
                     <hr class="border-gray-100 dark:border-gray-700">
 
-                    {{-- ปุ่มกด --}}
+                    {{-- Button --}}
                     <div class="flex justify-between items-center">
                         <a href="{{ route('admin.products') }}" class="text-sm text-gray-500 hover:text-pink-500 flex items-center transition-colors">
                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                             Cancel
                         </a>
                         <button type="submit" class="px-8 py-3 bg-pink-500 text-white font-bold rounded-xl shadow-lg shadow-pink-200 hover:bg-pink-600 hover:shadow-pink-300 transform hover:-translate-y-0.5 transition-all">
-                            ✨ บันทึกสินค้าใหม่
+                            ✨ Save new product
                         </button>
                     </div>
                 </form>

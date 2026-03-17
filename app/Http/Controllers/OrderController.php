@@ -48,49 +48,58 @@ class OrderController extends Controller
         'phone'            => 'required|string|max:10',
         'payment_method'   => 'required|in:promptpay,credit_card,bank_transfer,cash_on_delivery',
         ]);
+
         // Fetch products and calculate total price
-    $productIds = collect($validated['products'])->pluck('product_id');
-    $products   = Product::findMany($productIds)->keyBy('product_id');
-     $total = collect($validated['products'])->sum(
-        fn($item) => $products[$item['product_id']]->price * $item['quantity']
-    );
-    // Create order and attach products
-    $order = Auth::user()->orders()->create([
-        'status'      => 'pending',
-        'total_amount' => $total,
-        'order_date'   => now(),
-        'address'      => $validated['address'],
-    ]);
-    $orderItems = collect($validated['products'])->map(
-            fn($item) => [
-                'product_id'        => $item['product_id'],
-                'quantity'          => $item['quantity'],
-                'price_at_purchase' => $products[$item['product_id']]->price,
-            ]
+        $productIds = collect($validated['products'])->pluck('product_id');
+        $products   = Product::findMany($productIds)->keyBy('product_id');
+        $total = collect($validated['products'])->sum(
+            fn($item) => $products[$item['product_id']]->price * $item['quantity']
+        );
+        $shippingFee = 50; //fixed price
+        $grandTotal  = $total + $shippingFee;
+
+        // Create order and attach products
+        $order = Auth::user()->orders()->create([
+            'status'       => 'pending',
+            'total_amount' => $grandTotal,
+            'shipping_fee' => $shippingFee,
+            'order_date'   => now(),
+            'address'      => $validated['address'],
+        ]);
+
+        $orderItems = collect($validated['products'])->map(
+                fn($item) => [
+                    'product_id'        => $item['product_id'],
+                    'quantity'          => $item['quantity'],
+                    'price_at_purchase' => $products[$item['product_id']]->price,
+                ]
         )->toArray();
 
         $order->items()->createMany($orderItems);
         $order->payments()->create([
             'status'       => 'unpaid',
             'method'       => $validated['payment_method'],
-            'amount'       => $total,
+            'amount'       => $grandTotal,
             'payment_date' => now(), // Payment date will be set when payment is completed
         ]);
+
         // Clear user's cart after order creation
         Auth::user()->cart()->first()?->items()->delete();
-    return redirect()->route('payments.create', $order->order_id)
+        
+        return redirect()->route('payments.create', $order->order_id)
                  ->with('success', 'Order created successfully');
     }
 
-        public function show(string $id)
-{
-    $order = Auth::user()
-        ->orders()
-        ->with('items.product')
-        ->findOrFail($id);
+    public function show(string $id)
+    {
+        $order = Auth::user()
+            ->orders()
+            ->with('items.product')
+            ->findOrFail($id);
 
-    return view('orders.show', compact('order'));
-}
+        return view('orders.show', compact('order'));
+    }
+
 // For "Buy Now" functionality, we can create a separate method that creates an order directly from a single product without going through the cart.
 public function edit(string $id)
 {
@@ -133,7 +142,15 @@ public function edit(string $id)
         $total = collect($validated['products'])->sum(
             fn($item) => $products[$item['product_id']]->price * $item['quantity']
         );
-        $order->update(['total_amount' => $total]);
+        
+        $shippingFee = 50;
+        $grandTotal  = $total + $shippingFee;
+        
+        $order->update([
+            'total_amount' => $grandTotal,
+            'shipping_fee' => $shippingFee,
+        ]);
+
         // Prevent updates to paid orders
         if ($order->isPaid()) {
         return redirect()->back()

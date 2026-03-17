@@ -8,7 +8,10 @@ class Order extends Model
 {
     protected $primaryKey = 'order_id';
 
-    protected $fillable = ['user_id', 'status', 'payment_status','total_amount', 'order_date'];
+    protected $fillable = [
+        'user_id', 'status', 'payment_status', 'total_amount', 
+        'shipping_fee', 'order_date', 'address',
+    ];
 
     protected $casts = [
         'order_date' => 'datetime',
