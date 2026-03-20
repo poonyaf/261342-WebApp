@@ -1,6 +1,6 @@
 <x-guest-layout>
     <x-auth-session-status class="mb-4" :status="session('status')" />
-
+    
     <div class="animated-border">
         <div class="animated-border-content card card-pad">
             <h1 class="h1 mb-1" style="color: var(--text);">Welcome back!</h1>

@@ -19,13 +19,25 @@
         style="background: var(--bg); color: var(--text);">
             <div>
                 <!-- รอโลโก้ -->
-                <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
-                    <img
-                        src="{{ asset('images/logo.JPG') }}"
-                        alt="Stellar Logo"
-                        class="h-20 w-auto" 
-                    /> 
-                </a>
+             <a href="{{ route('dashboard') }}" class="flex flex-col items-center mb-4" style="gap: 4px;">
+    <div style="
+        width: 110px; 
+        height: 110px; 
+        border-radius: 50%; 
+        overflow: hidden; 
+        flex-shrink: 0;
+        border: 3px solid rgba(255,255,255,0.8);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    ">
+        <img
+            src="{{ asset('images/stellar.jpg') }}"
+            alt="Stellar Logo"
+            style="width:100%; height:100%; object-fit:cover;"
+        />
+    </div>
+    
+    
+</a>
             </div>
 
             <div class="animated-border shadow">

@@ -54,6 +54,7 @@
             </p>
         @endif
     </div>
+    
 </form>
 
 @if ($user->image)

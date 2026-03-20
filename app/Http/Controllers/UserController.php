@@ -11,26 +11,25 @@ use Illuminate\Support\Facades\File;
 class UserController extends Controller
 {
     public function updateProfilePhoto(Request $request)
-    {
-        $request->validate([
-            'profile_photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+{
+    $request->validate([
+        'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',  // ✅ แก้
+    ]);
 
-        $user = Auth::user(); //user alow to update own photo
+    $user = Auth::user();
 
-        // Delete old photo    if exists
-        if ($user->image  && File::exists(storage_path('app/private/profile_photos/' . $user->image))) {
-            File::delete(storage_path('app/private/profile_photos/' . $user->image));
-        }
-
-        $fileName = time() . '_' . $user->id . '_' . $request->file('profile_photo')->getClientOriginalName();
-        $filePath = $request->file('profile_photo')->storeAs('profile_photos', $fileName, 'local');
-
-        $user->image = $fileName; //Update the user record
-        $user->save(); //call the method to save photo
-
-        return redirect()->route('profile.edit')->with('status', 'profile-photo-updated');
+    if ($user->image && File::exists(storage_path('app/profile_photos/' . $user->image))) {
+        File::delete(storage_path('app/profile_photos/' . $user->image));
     }
+
+    $fileName = time() . '_' . $user->id . '_' . $request->file('photo')->getClientOriginalName();  // ✅ แก้
+    $filePath = $request->file('photo')->storeAs('profile_photos', $fileName, 'local');  // ✅ แก้
+
+    $user->image = $fileName;
+    $user->save();
+
+    return redirect()->route('profile.edit')->with('status', 'profile-photo-updated');
+}
 
     public function showProfilePhoto($filename)
     {

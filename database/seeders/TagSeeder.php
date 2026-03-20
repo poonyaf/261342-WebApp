@@ -25,6 +25,7 @@ class TagSeeder extends Seeder
             'books',
             'music',
             'stationery',
+            'Secondhand/2nd hand',
             'vintage',
             '90s',
             'watch',

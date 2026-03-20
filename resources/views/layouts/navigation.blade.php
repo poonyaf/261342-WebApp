@@ -6,20 +6,12 @@
             <div class="flex items-center gap-8">
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-2 shrink-0">
                     <div style="width:42px; height:42px; border-radius:50%; overflow:hidden; border: 2px solid rgba(255,255,255,0.6); flex-shrink:0;">
-                         <img src="/images/IMG_8006.png" alt="Stellar Cart" style="width:100%; height:100%; object-fit:cover;">
+                        <img src="{{ asset('images/stellar.jpg') }}" alt="Stellar Logo" style="width:100%; height:100%; object-fit:cover;">
                     </div>
                 </a>
 
                 {{-- DESKTOP MENU --}}
                 <div class="hidden sm:flex items-center gap-1">
-
-                    {{-- Dashboard --}}
-                    <a href="{{ route('dashboard') }}"
-                       style="display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:10px; font-size:14px; font-weight:500; text-decoration:none; transition: all 0.2s;
-                       {{ request()->routeIs('dashboard') ? 'background:rgba(255,255,255,0.25); color:white;' : 'color:white;' }}">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                        Dashboard
-                    </a>
 
                     {{-- Admin --}}
                     @auth
@@ -160,7 +152,7 @@
             </div>
         @endauth
 
-        <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">🏠 Dashboard</x-responsive-nav-link>
+        <!-- remove dashboard blade -->
         <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.index')">🛍️ Products</x-responsive-nav-link>
         <x-responsive-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')">📄 Orders</x-responsive-nav-link>
         <x-responsive-nav-link :href="route('payments.index')" :active="request()->routeIs('payments.*')">💳 Payments</x-responsive-nav-link>
