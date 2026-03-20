@@ -6,7 +6,7 @@
             <div class="flex items-center gap-8">
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-2 shrink-0">
                     <div style="width:42px; height:42px; border-radius:50%; overflow:hidden; border: 2px solid rgba(255,255,255,0.6); flex-shrink:0;">
-                        <img src="{{ asset('images/logo.JPG') }}" alt="Stellar Cart" style="width:100%; height:100%; object-fit:cover;">
+                        <img src="{{ asset('images/IMG_8006.png') }}" alt="Stellar Cart" style="width:100%; height:100%; object-fit:cover;">
                     </div>
                 </a>
 
