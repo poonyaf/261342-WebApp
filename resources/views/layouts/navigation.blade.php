@@ -13,17 +13,6 @@
                 {{-- DESKTOP MENU --}}
                 <div class="hidden sm:flex items-center gap-1">
 
-                    {{-- Dashboard --}}
-                    <a href="{{ route('dashboard') }}"
-                       style="display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:10px; font-size:14px; font-weight:500; text-decoration:none; transition: all 0.2s;
-                       {{ request()->routeIs('dashboard') ? 'background:rgba(255,255,255,0.25); color:white;' : 'color:white;' }}">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                        Dashboard
-                        @if(request()->routeIs('dashboard'))
-                            <span style="display:block; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:20px; height:3px; background:#db2777; border-radius:2px;"></span>
-                        @endif
-                    </a>
-
                     {{-- Admin --}}
                     @auth
                         @if(auth()->user()->role === 'admin')
