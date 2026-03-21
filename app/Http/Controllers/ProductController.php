@@ -36,32 +36,39 @@ class ProductController extends Controller
               ->orWhere('description', 'like', '%' . $search . '%');
         });
     }
-        if ($category) {
-            $query->whereHas('tags', function ($q) use ($category) {
-            $q->where('name', $category);
-        });
-    }
+       if ($category) {
+    $query->whereHas('tags', function ($q) use ($category) {
+        $q->where('name', $category);
+    });
+}
 
-        // If mode is 'Secondhand/2nd hand', include products with tags 'Secondhand/2nd hand', 'vintage', or '90s'
-        $secondhandTags = ['Secondhand/2nd hand', 'vintage', '90s'];
+$secondhandTags = ['Secondhand/2nd hand', 'vintage', '90s'];
 
-        if ($mode === 'Secondhand/2nd hand') {
-            $query->whereHas('tags', function ($q) use ($secondhandTags) {
-            $q->whereIn('name', $secondhandTags);
+if ($mode === 'Secondhand/2nd hand') {
+    $query->whereHas('tags', function ($q) use ($secondhandTags) {
+        $q->whereIn('name', $secondhandTags);
+    });
+} else {
+    $query->whereDoesntHave('tags', function ($q) use ($secondhandTags) {
+        $q->whereIn('name', $secondhandTags);
+    });
+}
+
+$products = $query->get();
+
+$categories = Tag::whereHas('products', function ($q) use ($mode, $secondhandTags) {
+    $q->where('taggable_type', 'App\\Models\\Product');
+    if ($mode === 'Secondhand/2nd hand') {
+        $q->whereHas('tags', function ($t) use ($secondhandTags) {
+            $t->whereIn('name', $secondhandTags);
         });
     } else {
-        // for Online mode, exclude products with tags 'Secondhand/2nd hand', 'vintage', or '90s'
-        $query->whereDoesntHave('tags', function ($q) use ($secondhandTags) {
-            $q->whereIn('name', $secondhandTags);
+        $q->whereDoesntHave('tags', function ($t) use ($secondhandTags) {
+            $t->whereIn('name', $secondhandTags);
         });
     }
-
-        $products = $query->get();
-        
-        // Get all categories (tags) used in products
-        $categories = Tag::whereHas('products', function ($q) {
-            $q->where('taggable_type', 'App\\Models\\Product');
-        })->pluck('name')->unique();
+})->whereNotIn('name', $mode === 'Secondhand/2nd hand' ? [] : $secondhandTags)
+->pluck('name')->unique();
 
         return view('products.index', compact('products', 'search', 'category', 'categories', 'mode'));
     }
