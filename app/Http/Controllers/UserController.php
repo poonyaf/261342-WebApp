@@ -13,19 +13,15 @@ class UserController extends Controller
     public function updateProfilePhoto(Request $request)
 {
     $request->validate([
-        'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',  // ✅ แก้
+        'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
     ]);
 
     $user = Auth::user();
 
-    if ($user->image && File::exists(storage_path('app/profile_photos/' . $user->image))) {
-        File::delete(storage_path('app/profile_photos/' . $user->image));
-    }
+    $cloudinary = new \Cloudinary\Cloudinary(env('CLOUDINARY_URL'));
+    $result = $cloudinary->uploadApi()->upload($request->file('photo')->getRealPath());
 
-    $fileName = time() . '_' . $user->id . '_' . $request->file('photo')->getClientOriginalName();  // ✅ แก้
-    $filePath = $request->file('photo')->storeAs('profile_photos', $fileName, 'local');  // ✅ แก้
-
-    $user->image = $fileName;
+    $user->image = $result['secure_url'];
     $user->save();
 
     return redirect()->route('profile.edit')->with('status', 'profile-photo-updated');

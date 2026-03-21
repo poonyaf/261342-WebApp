@@ -173,7 +173,7 @@ public function approveSeller($id)
 
             // 🌟 2. อัปเดต Role ของ User (แก้มาใช้แบบกำหนดค่าตรงๆ แล้วค่อย save)
             $user = $request->user;
-            $user->role = 'admin';
+            $user->role = 'seller';
             $user->save(); 
 
             return back()->with('success', "Approved seller request for {$user->name}!");
