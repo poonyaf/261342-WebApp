@@ -89,18 +89,18 @@
                     </div>
 
                     {{-- ✅ ปุ่ม Order Now --}}
-                    <div class="p-4 flex justify-end border-t border-gray-100">
-                        <form method="POST" action="{{ route('orders.store') }}">
-                            @csrf
-                            @foreach ($cart->items as $item)
-                                <input type="hidden" name="products[{{ $loop->index }}][product_id]" value="{{ $item->product_id }}">
-                                <input type="hidden" name="products[{{ $loop->index }}][quantity]" value="{{ $item->quantity }}">
-                            @endforeach
-                            <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 font-medium">
-                                Order Now
-                            </button>
-                        </form>
-                    </div>
+<div class="p-4 flex justify-end border-t border-gray-100">
+    <form method="GET" action="{{ route('orders.confirm') }}">
+        @csrf
+        @foreach ($cart->items as $item)
+            <input type="hidden" name="products[{{ $loop->index }}][product_id]" value="{{ $item->product_id }}">
+            <input type="hidden" name="products[{{ $loop->index }}][quantity]" value="{{ $item->quantity }}">
+        @endforeach
+        <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 font-medium">
+            Order Now
+        </button>
+    </form>
+</div>
 
                 </div>
             @endif
