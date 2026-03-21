@@ -4,20 +4,24 @@
 
 @layer base {
   :root {
-    /* Pink Theme */
-    --pinkPage-primary: #ECA1B6;
-    --pinkPage-secondary: #D67B91;
-    --pinkPage-accent: #F9C0D9;
-    --pinkPage-neutral-Brown: #7B4A3A;
-    --pinkPage-neutral-1: #FFF8FA;
-    --pinkPage-neutral-2: #FCEDEE;
-    --pinkPage-favorite-star: #BD8083;
-
+    --primary: #ECA1B6;
+    --secondary: #f48fb1;
+    --accent: #F9C0D9;
+    --neutral: #7B4A3A;
+    --bg: #FFF8FA;
+    --surface: #FFFFFF;
+    --text: #333333;
+    --favorite-star: #BD8083;
+    
     /* Brown Theme */
-    --brownPage-primary: #7B4A3A;
-    --brownPage-secondary: #A0522D;
-    --brownPage-accent-pink: #ECA1B6;
-    --brownPage-favorite-star: #eb7eb1;
+    .theme-brown {
+      --primary: #7B4A3A;
+      --secondary: #A0522D;
+      --accent: #ECA1B6;
+      --neutral: #7B4A3A;
+      --bg: #FAF7F4;
+      --favorite-star: #eb7eb1;
+    }
 
     /* Semantic & Shared */
     --stellar-white: #FFFFFF;
@@ -30,32 +34,11 @@
     --radius-lg: 0.75rem;
     --radius-xl: 1rem;
     --radius-2xl: 1.5rem;
-
-    /* ===== Theme tokens (Use across the whole web) ===== */
-    --primary: var(--pinkPage-primary);
-    --secondary: var(--pinkPage-secondary);
-    --accent: var(--pinkPage-accent);
-    --neutral: var(--pinkPage-neutral-Brown);
-
-    --bg: var(--pinkPage-neutral-1);   /* #FFF8FA */
-    --surface: var(--stellar-white);
-    --text: #333333;
-
-    --favorite-star: var(--pinkPage-favorite-star);
-  }
-
-  /* class="theme-brown" at body or html */ 
-  .theme-brown {
-    --primary: var(--brownPage-primary);
-    --secondary: var(--brownPage-secondary);
-    --accent: var(--brownPage-accent-pink);
-    --neutral: var(--brownPage-primary);
-    --favorite-star: var(--brownPage-favorite-star);
   }
 
   body {
     @apply antialiased;
-    background: var(--bg);
+    background-color: var(--bg);
     color: var(--text);
     font-family: 'Inter', 'Noto Sans Thai', sans-serif;
   }
@@ -63,12 +46,16 @@
 
 @layer components {
   .page-wrap { @apply py-10; }
-  .container { @apply max-w-4xl mx-auto sm:px-6 lg:px-8; }
+  .container { @apply max-w-5xl mx-auto sm:px-6 lg:px-8; }
 
   .card {
-    @apply shadow;
+    @apply shadow transition-all duration-300;
     background: var(--surface);
     border-radius: var(--radius-2xl);
+  }
+
+  .card:hover {
+    @apply shadow-lg;
   }
 
   .card-pad { @apply p-4 sm:p-5 lg:p-6 xl:p-7; }
@@ -82,7 +69,10 @@
 
   .btn { @apply inline-flex items-center justify-center px-4 py-2 text-sm font-semibold transition; border-radius: var(--radius-xl); }
   .btn-primary { @apply btn text-white; background: var(--primary); }
-  .btn-primary:hover { background: var(--secondary); }
+  .btn-primary:hover { 
+    background: var(--secondary);
+    @apply shadow-md;
+  }
 
   .btn-success { @apply btn text-white; background: var(--color-success); }
   .btn-success:hover { filter: brightness(0.95); }
@@ -99,14 +89,15 @@
     background: var(--surface);
   }
   .input:focus, .select:focus {
-    box-shadow: 0 0 0 3px rgba(236,161,182,0.35); /* อิง pink primary */
+    box-shadow: 0 0 0 3px rgba(236,161,182,0.35);
     border-color: var(--primary);
   }
 
   /* NAV BAR */
   .navbar {
-    background: var(--pinkPage-primary);
+    background: var(--primary);
     color: #fff;
+    transition: background 0.3s ease;
   }
   .navbar a { color: #fff; }
   

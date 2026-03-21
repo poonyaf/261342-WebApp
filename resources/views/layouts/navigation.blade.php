@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" style="background: #f48fb1; position: sticky; top: 0; z-index: 50;">
+<nav x-data="{ open: false }" class="sticky top-0 z-50 transition-colors duration-300 bg-secondary">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16 items-center">
 

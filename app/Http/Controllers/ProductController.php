@@ -10,6 +10,7 @@ use App\Models\Wishlist;
 use Illuminate\Support\Facades\Auth; 
 use Cloudinary\Cloudinary as CloudinaryClient;
 use Cloudinary\Configuration\Configuration;
+
 class ProductController extends Controller
 {
     /**
@@ -17,30 +18,50 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
+        // search and filter products by category (tag)
         $search = $request->input('search');
         $category = $request->input('category');
+        // Get the mode from the request, default to 'Online' if not provided
+        $mode = $request->input('mode', 'Online');
 
         $query = Product::query();
+        $query = Product::with('tags');
 
+        // Apply search filter
         if ($search) {
-            $query->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('description', 'like', '%' . $search . '%');
-        }
-
+            $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', '%' . $search . '%')
+              ->orWhere('description', 'like', '%' . $search . '%');
+        });
+    }
         if ($category) {
             $query->whereHas('tags', function ($q) use ($category) {
-                $q->where('name', $category);
-            });
-        }
+            $q->where('name', $category);
+        });
+    }
 
-        $products = $query->with('tags')->get();
+        // If mode is 'Secondhand/2nd hand', include products with tags 'Secondhand/2nd hand', 'vintage', or '90s'
+        $secondhandTags = ['Secondhand/2nd hand', 'vintage', '90s'];
+
+        if ($mode === 'Secondhand/2nd hand') {
+            $query->whereHas('tags', function ($q) use ($secondhandTags) {
+            $q->whereIn('name', $secondhandTags);
+        });
+    } else {
+        // for Online mode, exclude products with tags 'Secondhand/2nd hand', 'vintage', or '90s'
+        $query->whereDoesntHave('tags', function ($q) use ($secondhandTags) {
+            $q->whereIn('name', $secondhandTags);
+        });
+    }
+
+        $products = $query->get();
         
         // Get all categories (tags) used in products
         $categories = Tag::whereHas('products', function ($q) {
             $q->where('taggable_type', 'App\\Models\\Product');
         })->pluck('name')->unique();
 
-        return view('products.index', compact('products', 'search', 'category', 'categories'));
+        return view('products.index', compact('products', 'search', 'category', 'categories', 'mode'));
     }
 
     /**

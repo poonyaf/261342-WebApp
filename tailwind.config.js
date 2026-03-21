@@ -17,6 +17,11 @@ export default {
 
             },
             colors: {
+                'primary': 'var(--primary)',
+                'secondary': 'var(--secondary)',
+                'accent': 'var(--accent)',
+                'neutral-color': 'var(--neutral)',
+                
                 // Pink Page
                 'pink-primary': 'var(--pinkPage-primary)',
                 'pink-secondary': 'var(--pinkPage-secondary)',

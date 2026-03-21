@@ -14,10 +14,9 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased">
+<body {{ $attributes->merge(['class' => 'font-sans antialiased transition-colors duration-300']) }}>
 
-    <div style="background: var(--bg); color: var(--text);">
-
+    <div class="min-h-screen">
         {{-- NAVBAR --}}
         @include('layouts.navigation')
 
