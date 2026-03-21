@@ -119,9 +119,11 @@
                     </div>
                     @endforeach
                 </div>
-                    @empty
-                        <p class="text-gray-500 col-span-4">No payment history found.</p>
-                    @endforelse
+                   @forelse ($orders as $order)
+    {{-- content --}}
+@empty
+    <p class="text-gray-500 col-span-4">No payment history found.</p>
+@endforelse
                 </div>
             </div>
 
