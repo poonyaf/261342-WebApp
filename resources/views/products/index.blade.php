@@ -1,9 +1,4 @@
 <x-app-layout class="{{ ($mode ?? 'online') === 'Secondhand/2nd hand' ? 'theme-brown' : '' }}">
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl leading-tight" style="color: var(--secondary);">
-            {{ ($mode ?? 'online') === 'Secondhand/2nd hand' ? '♻️ 2nd Hand Market' : '📁 New Products' }}
-        </h2>
-    </x-slot>
 
     <div class="page-wrap">
         <div class="container">
@@ -29,6 +24,30 @@
                     </a>
                 </div>
             </div>
+
+            {{-- Carousel (ยังไม่ได้ใส่รูปคับ) --}}
+            <div class="swiper w-full h-[400px] rounded-xl overflow-hidden">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide bg-cover bg-center" style="background-image: url('image1.jpg')">
+                    <div class="bg-black/40 h-full flex items-center p-10">
+                        <h2 class="text-white text-4xl font-bold">2nd Hand Market</h2>
+                    </div>
+                </div>
+                <div class="swiper-slide bg-cover bg-center" style="background-image: url('image2.jpg')">...</div>
+            </div>
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
+            </div>
+
+            <script>
+            const swiper = new Swiper('.swiper', {
+                loop: true,
+                autoplay: { delay: 3000 },
+                pagination: { el: '.swiper-pagination' },
+                navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+            });
+            </script>
 
             {{-- Search Bar --}}
             <div class="mb-8 card card-pad" style="border-top: 3px solid var(--secondary);">
@@ -129,12 +148,33 @@
                                     <span class="muted text-xs">No Image</span>
                                 </div>
                             @endif
+    
+                        {{-- Stock Badge (ย้ายมาซ้ายบน) --}}
+                        <div class="absolute top-3 left-3 text-xs px-3 py-1 rounded-full font-semibold backdrop-blur-sm shadow-sm"
+                            style="background: rgba(255,255,255,0.9); color: var(--text);">
+                            {{ $product->stock_number > 0 ? '✓ In Stock' : '✗ Out' }}
+                        </div>
+
+                        {{-- 🌟 Wishlist (Favorite) Button (ขวาบน) --}}
+                        @auth
+                            @php
+                                $isWishlisted = \App\Models\Wishlist::where('user_id', auth()->id())
+                                                    ->where('product_id', $product->product_id)
+                                                    ->exists();
+                            @endphp
+                            <button type="button" 
+                                onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist(this, {{ $product->product_id }})" 
+                                class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-md transition-transform hover:scale-110 z-20 cursor-pointer"
+                                style="color: var(--favorite-star);">
                             
-                            {{-- Stock Badge --}}
-                            <div class="absolute top-3 right-3 text-xs px-3 py-1 rounded-full font-semibold backdrop-blur-sm"
-                                 style="background: rgba(255,255,255,0.9); color: var(--text); border: 1px solid rgba(0,0,0,0.1);">
-                                {{ $product->stock_number > 0 ? '✓ In Stock' : '✗ Out' }}
-                            </div>
+                            <svg class="w-5 h-5 wishlist-icon transition-colors duration-200" 
+                                fill="{{ $isWishlisted ? 'currentColor' : 'none' }}" 
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                            </svg>
+                        </button>
+                        @endauth
                         </div>
 
                         <div class="card-pad flex flex-col gap-3 flex-1">
@@ -189,6 +229,46 @@
                             <p class="muted text-sm mt-2">Try adjusting your search or filters</p>
                         @endif
                     </div>
+
+                    {{-- Wishlist Toggle Script --}}
+                    <script>
+                    function toggleWishlist(btn, productId) {
+                        btn.disabled = true;
+                        const icon = btn.querySelector('.wishlist-icon');
+                    
+                        icon.style.opacity = '0.5';
+
+                        // 2. ส่งข้อมูลไปที่ Controller
+                        fetch('{{ route("wishlist.toggle") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify({ product_id: productId })
+                        })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network Error');
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.wishlisted) {
+                                icon.setAttribute('fill', 'currentColor'); // เติมสีทึบ
+                            } else {
+                                icon.setAttribute('fill', 'none'); // เอาสีออก (โปร่งใส)
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error updating wishlist. Please try again.');
+                        })
+                        .finally(() => {
+                            btn.disabled = false;
+                            icon.style.opacity = '1';
+                        });
+                    }
+                </script>
                 @endforelse
             </div>
         </div>
