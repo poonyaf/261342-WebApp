@@ -94,16 +94,14 @@
                         <p class="text-xs text-gray-500">Products in cart</p>
                     </div>
                 </a>
-
-                {{-- 3. สินค้าที่เพิ่งดู --}}
-                <a href="{{ route('recentViews.index') }}" class="bg-white rounded-3xl p-5 shadow-sm border border-pink-50 hover:shadow-md transition text-center flex flex-col items-center justify-center gap-2">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-yellow-500 bg-yellow-50 text-xl">🕒</div>
-                    <div>
-                        <p class="font-bold text-gray-800">Latest products you viewed</p>
-                        <p class="text-xs text-gray-500">Recently Viewed Products</p>
-                    </div>
-                </a>
-
+{{-- 3. Payment --}}
+<a href="{{ route('payments.index') }}" class="bg-white rounded-3xl p-5 shadow-sm border border-pink-50 hover:shadow-md transition text-center flex flex-col items-center justify-center gap-2">
+    <div class="w-10 h-10 rounded-full flex items-center justify-center text-pink-500 bg-pink-50 text-xl">💳</div>
+    <div>
+        <p class="font-bold text-gray-800">Payment</p>
+        <p class="text-xs text-gray-500">My Payments</p>
+    </div>
+</a>
                 {{-- 4. ประวัติคำสั่งซื้อ --}}
                 <a href="{{ route('orders.index') }}" class="bg-white rounded-3xl p-5 shadow-sm border border-pink-50 hover:shadow-md transition text-center flex flex-col items-center justify-center gap-2">
                     <div class="w-10 h-10 rounded-full flex items-center justify-center text-green-500 bg-green-50 text-xl">📦</div>
