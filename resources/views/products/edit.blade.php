@@ -11,7 +11,7 @@
 
                 <form method="POST" action="{{ route('products.update', $product->product_id) }}" enctype="multipart/form-data" class="space-y-4">
                     @csrf
-                    @method('PUT')
+                    @method('PATCH')
 
                     {{-- Product Name --}}
                     <div>
