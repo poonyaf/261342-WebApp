@@ -1,7 +1,31 @@
 <x-app-layout class="{{ ($mode ?? 'online') === 'Secondhand/2nd hand' ? 'theme-brown' : '' }}">
 
     <div class="page-wrap">
-        <div class="container">
+            
+        {{-- Carousel (ยังไม่ได้ใส่รูปคับ) --}}
+            <div class="swiper w-full h-[400px] rounded-xl overflow-hidden">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide bg-cover bg-center" style="background-image: url('image1.jpg')">
+                    <div class="bg-black/40 h-full flex items-center p-10">
+                        <h2 class="text-white text-4xl font-bold">2nd Hand Market</h2>
+                    </div>
+                </div>
+                <div class="swiper-slide bg-cover bg-center" style="background-image: url('image2.jpg')">...</div>
+            </div>
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
+            </div>
+
+            <script>
+            const swiper = new Swiper('.swiper', {
+                loop: true,
+                autoplay: { delay: 3000 },
+                pagination: { el: '.swiper-pagination' },
+                navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+            });
+            </script>
+<div class="container">
             {{-- Mode Toggle --}}
             <div class="flex justify-center mb-10">
                 <div class="inline-flex rounded-full p-1 backdrop-blur-sm" style="background: rgba(158, 131, 131, 0.08); border: 1px solid rgba(158, 131, 131, 0.1);">
@@ -26,29 +50,7 @@
             </div>
 
 
-            {{-- Carousel (ยังไม่ได้ใส่รูปคับ) --}}
-            <div class="swiper w-full h-[400px] rounded-xl overflow-hidden">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide bg-cover bg-center" style="background-image: url('image1.jpg')">
-                    <div class="bg-black/40 h-full flex items-center p-10">
-                        <h2 class="text-white text-4xl font-bold">2nd Hand Market</h2>
-                    </div>
-                </div>
-                <div class="swiper-slide bg-cover bg-center" style="background-image: url('image2.jpg')">...</div>
-            </div>
-            <div class="swiper-pagination"></div>
-            <div class="swiper-button-prev"></div>
-            <div class="swiper-button-next"></div>
-            </div>
-
-            <script>
-            const swiper = new Swiper('.swiper', {
-                loop: true,
-                autoplay: { delay: 3000 },
-                pagination: { el: '.swiper-pagination' },
-                navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-            });
-            </script>
+            
 
             {{-- Search Bar --}}
             <div class="mb-8 card card-pad" style="border-top: 3px solid var(--secondary);">
