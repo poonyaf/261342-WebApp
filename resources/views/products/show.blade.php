@@ -39,16 +39,11 @@
                 {{-- Name --}}
                 <h1 class="text-xl font-bold text-gray-800">{{ $product->name }}</h1>
 
-                {{-- rating --}}
-                <div class="flex items-center mt-2 text-yellow-400 text-sm">
-                    ⭐⭐⭐⭐☆
-                    <span class="text-gray-400 ml-2">(45 Reviews)</span>
-                </div>
+                
 
                 {{-- Price --}}
                 <div class="mt-3 flex items-baseline gap-3">
                     <span class="text-2xl font-bold text-gray-800">฿{{ number_format($product->price, 2) }}</span>
-                    <span class="text-gray-400 line-through text-sm">฿{{ number_format($product->price * 1.2, 2) }}</span>
                 </div>
 
                 {{-- description --}}
