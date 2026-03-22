@@ -26,21 +26,19 @@
             </div>
 
 
-            {{-- Carousel (ยังไม่ได้ใส่รูปคับ) --}}
-            <div class="swiper w-full h-[400px] rounded-xl overflow-hidden">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide bg-cover bg-center" style="background-image: url('image1.jpg')">
-                    <div class="bg-black/40 h-full flex items-center p-10">
-                        <h2 class="text-white text-4xl font-bold">2nd Hand Market</h2>
-                    </div>
-                </div>
-                <div class="swiper-slide bg-cover bg-center" style="background-image: url('image2.jpg')">...</div>
+           {{-- Carousel --}}
+<div class="swiper w-full h-[400px] rounded-xl overflow-hidden">
+    <div class="swiper-wrapper">
+        <div class="swiper-slide bg-cover bg-center" style="background-image: url('/images/LINE_ALBUM_Banner_260323_1.jpg')">
+            <div class="bg-black/40 h-full flex items-center p-10">
+                <h2 class="text-white text-4xl font-bold">2nd Hand Market</h2>
             </div>
-            <div class="swiper-pagination"></div>
-            <div class="swiper-button-prev"></div>
-            <div class="swiper-button-next"></div>
-            </div>
-
+        </div>
+    </div>
+    <div class="swiper-pagination"></div>
+    <div class="swiper-button-prev"></div>
+    <div class="swiper-button-next"></div>
+</div>
             <script>
             const swiper = new Swiper('.swiper', {
                 loop: true,
