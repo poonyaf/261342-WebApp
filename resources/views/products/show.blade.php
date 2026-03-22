@@ -65,52 +65,56 @@
                     </div>
                 </div>
 
-                {{-- Button --}}
-                <div class="flex gap-2 mt-6">
+               {{-- Button --}}
+<div class="flex gap-2 mt-6">
 
-                    {{-- Wishlist --}}
-                    @auth
-                    @if($inWishlist)
-                    <form method="POST" action="{{ route('wishlist.destroy', \App\Models\Wishlist::where('user_id', Auth::id())->where('product_id', $product->product_id)->first()?->wishlist_id) }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="w-12 h-12 border-2 border-yellow-400 rounded-xl text-yellow-400 hover:bg-yellow-50 transition text-lg">
-                            ★
-                        </button>
-                    </form>
-                    @else
-                    <button id="wishlist-btn" onclick="toggleWishlist({{ $product->product_id }})"
-                        class="w-12 h-12 border-2 border-gray-200 text-gray-400 rounded-xl hover:border-yellow-400 hover:text-yellow-400 transition text-lg">
-                        ☆
-                    </button>
-                    @endif
-                    @endauth
+    {{-- Wishlist --}}
+    @auth
+    @if($inWishlist)
+    <form method="POST" action="{{ route('wishlist.destroy', \App\Models\Wishlist::where('user_id', Auth::id())->where('product_id', $product->product_id)->first()?->wishlist_id) }}">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="w-12 h-12 border-2 border-yellow-400 rounded-xl text-yellow-400 hover:bg-yellow-50 transition text-lg">
+            ★
+        </button>
+    </form>
+    @else
+    <button id="wishlist-btn" onclick="toggleWishlist({{ $product->product_id }})"
+        class="w-12 h-12 border-2 border-gray-200 text-gray-400 rounded-xl hover:border-yellow-400 hover:text-yellow-400 transition text-lg">
+        ☆
+    </button>
+    @endif
+    @endauth
 
-                    {{-- Add to cart --}}
-                    <form method="POST" action="{{ route('carts.store') }}" class="flex-1">
-                        @csrf
-                        <input type="hidden" name="product_id" value="{{ $product->product_id }}">
-                        <input type="hidden" name="quantity" id="quantity-input" value="1">
-                        <button type="submit" class="w-full h-12 border-2 border-pink-400 text-pink-500 rounded-xl hover:bg-pink-50 transition text-sm font-medium">
-                            🛒 Add to Cart
-                        </button>
-                    </form>
+    @if($product->stock_number > 0)
+        {{-- Add to cart --}}
+        <form method="POST" action="{{ route('carts.store') }}" class="flex-1">
+            @csrf
+            <input type="hidden" name="product_id" value="{{ $product->product_id }}">
+            <input type="hidden" name="quantity" id="quantity-input" value="1">
+            <button type="submit" class="w-full h-12 border-2 border-pink-400 text-pink-500 rounded-xl hover:bg-pink-50 transition text-sm font-medium">
+                🛒 Add to Cart
+            </button>
+        </form>
 
-                    {{-- Buy Now --}}
-                    <form method="POST" action="{{ route('orders.storeNow') }}" class="flex-1">
-                        @csrf
-                        <input type="hidden" name="product_id" value="{{ $product->product_id }}">
-                        <input type="hidden" name="quantity" id="quantity-input-now" value="1">
-                        <button type="submit" class="w-full h-12 bg-pink-400 hover:bg-pink-500 text-white rounded-xl transition text-sm font-medium">
-                            ⚡ Buy Now
-                        </button>
-                    </form>
-
-                </div>
-
-            </div>
+        {{-- Buy Now --}}
+        <form method="POST" action="{{ route('orders.storeNow') }}" class="flex-1">
+            @csrf
+            <input type="hidden" name="product_id" value="{{ $product->product_id }}">
+            <input type="hidden" name="quantity" id="quantity-input-now" value="1">
+            <button type="submit" class="w-full h-12 bg-pink-400 hover:bg-pink-500 text-white rounded-xl transition text-sm font-medium">
+                ⚡ Buy Now
+            </button>
+        </form>
+    @else
+        {{-- Out of Stock --}}
+        <div class="flex-1">
+            <button disabled class="w-full h-12 bg-gray-200 text-gray-400 rounded-xl text-sm font-medium cursor-not-allowed">
+                😔 Out of Stock
+            </button>
         </div>
-    </div>
+    @endif
+
 </div>
 
 <script>
