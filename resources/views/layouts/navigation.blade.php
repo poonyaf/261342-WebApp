@@ -29,7 +29,7 @@
     @if(auth()->user()->role === 'seller')
         <a href="{{ route('seller.index') }}"
            style="display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:10px; font-size:14px; font-weight:500; text-decoration:none; transition: all 0.2s;
-           {{ request()->routeIs('products.*') ? 'background:rgba(255,255,255,0.25); color:white;' : 'color:white;' }}">
+           {{ request()->routeIs('seller.*') ? 'background:rgba(255,255,255,0.25); color:white;' : 'color:white;' }}">
             My Shop
         </a>
     @endif

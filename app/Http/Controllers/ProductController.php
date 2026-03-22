@@ -120,12 +120,7 @@ if ($request->has('tags')) {
                 ->where('product_id', $id)
                 ->firstOrFail();
         
-                if (Auth::check()) {
-                RecentView::create([
-                'user_id' => Auth::id(),
-                'product_id' => $product->product_id, 
-            ]);
-        }
+        
         //check if the product is in the user's wishlist
         $inWishlist = Auth::check()? $product->wishlists()->where('user_id', Auth::id())->exists() : false;
     return view('products.show', compact('product', 'inWishlist'));

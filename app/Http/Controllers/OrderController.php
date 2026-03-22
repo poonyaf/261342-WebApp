@@ -49,139 +49,72 @@ class OrderController extends Controller
         'payment_method'   => 'required|in:promptpay,credit_card,bank_transfer,cash_on_delivery',
         ]);
 
-         return DB::transaction(function () use ($validated, $request) {
-        // Fetch products and calculate total price
+       return DB::transaction(function () use ($validated) {
+        // 2. Fetch products and lock records to prevent overselling
         $productIds = collect($validated['products'])->pluck('product_id');
-        $products   = Product::findMany($productIds)->keyBy('product_id');
-        //check stock
-         foreach ($validated['products'] as $item) {
-            $product = $products[$item['product_id']];
-            if ($product->stock_number < $item['quantity']) {
-                throw new \Exception("Stock not enough for {$product->name}");
+        $products = Product::whereIn('product_id', $productIds)
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('product_id');
+
+        // 3. Check stock levels before doing anything
+        foreach ($validated['products'] as $item) {
+            $product = $products->get($item['product_id']);
+            if (!$product || $product->stock_number < $item['quantity']) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'products' => "Stock not enough for " . ($product->name ?? 'Unknown Product'),
+                ]);
             }
         }
-        
+
+        // 4. Calculate Totals
         $total = collect($validated['products'])->sum(
             fn($item) => $products[$item['product_id']]->price * $item['quantity']
         );
-        $shippingFee = 50; //fixed price
+        $shippingFee = 50; // fixed price
         $grandTotal  = $total + $shippingFee;
 
-        // Create order and attach products
+        // 5. Create Order and LINK User data (Address, Phone, etc.)
         $order = Auth::user()->orders()->create([
-            'status'       => 'pending',
-            'total_amount' => $grandTotal,
-            'shipping_fee' => $shippingFee,
-            'order_date'   => now(),
-            'address'      => $validated['address'],
+            'status'         => 'pending',
+            'total_amount'   => $grandTotal,
+            'shipping_fee'   => $shippingFee,
+            'order_date'     => now(),
+            'customer_name'  => $validated['name'],    // ลิงก์ชื่อ
+            'address'        => $validated['address'], // ลิงก์ที่อยู่
+            'phone'          => $validated['phone'],   // ลิงก์เบอร์โทร
         ]);
 
-        $orderItems = collect($validated['products'])->map(
-                fn($item) => [
-                    'product_id'        => $item['product_id'],
-                    'quantity'          => $item['quantity'],
-                    'price_at_purchase' => $products[$item['product_id']]->price,
-                ]
-        )->toArray();
+        // 6. Map Order Items, Reduce Stock, and Save
+        $orderItems = collect($validated['products'])->map(function ($item) use ($products) {
+            $product = $products[$item['product_id']];
+            
+            // Deduct stock here
+            $product->decrement('stock_number', $item['quantity']);
+
+            return [
+                'product_id'        => $product->product_id,
+                'quantity'          => $item['quantity'],
+                'price_at_purchase' => $product->price,
+            ];
+        })->toArray();
 
         $order->items()->createMany($orderItems);
-        //reduce stock
-         foreach ($validated['products'] as $item) {
-            $products[$item['product_id']]->decrement('stock_number', $item['quantity']);
-        }
+
+        // 7. Create Payment Record
         $order->payments()->create([
             'status'       => 'unpaid',
             'method'       => $validated['payment_method'],
             'amount'       => $grandTotal,
-            'payment_date' => now(), // Payment date will be set when payment is completed
+            'payment_date' => now(),
         ]);
 
-        // Clear user's cart after order creation
+        // 8. Clear user's cart items after successful order
         Auth::user()->cart()->first()?->items()->delete();
         
+        // 9. Redirect to payment page
         return redirect()->route('payments.create', $order->order_id)
-                 ->with('success', 'Order created successfully');
-                  });
-    }
-
-    public function show(string $id)
-    {
-        $order = Auth::user()
-            ->orders()
-            ->with('items.product')
-            ->findOrFail($id);
-
-        return view('orders.show', compact('order'));
-    }
-
-// For "Buy Now" functionality, we can create a separate method that creates an order directly from a single product without going through the cart.
-public function edit(string $id)
-{
-    $order = Auth::user()
-        ->orders()
-        ->with('items.product')
-        ->findOrFail($id);
-
-    $products = Product::all();
-
-    return view('orders.edit', compact('order', 'products'));
-}
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-{
-    $order = Auth::user()->orders()->findOrFail($id);
-    
-    $validated = $request->validate([
-        'products' => 'required|array|min:1',
-        'products.*.product_id' => 'required|exists:products,product_id',
-        'products.*.quantity'  => 'required|integer|min:1',
-    ]);
-
-    return DB::transaction(function () use ($validated, $order) {
-        $productIds = collect($validated['products'])->pluck('product_id');
-        $products = Product::findMany($productIds)->keyBy('product_id');
-
-        $syncData = collect($validated['products'])->mapWithKeys(fn($item) => [
-            $item['product_id'] => [
-                'quantity' => $item['quantity'],
-                'price_at_purchase' => $products[$item['product_id']]->price,
-            ]
-        ])->toArray();
-
-        $order->products()->sync($syncData);
-        //reduce stock_number when it sold
-        foreach ($validated['products'] as $item) {
-    $product = $products[$item['product_id']];
-    if ($product->stock_number < $item['quantity']) {
-        throw new \Exception("Stock not enough for {$product->name}");
-    }
-    $product->decrement('stock_number', $item['quantity']);
-}
-
-
-        // update total amount
-        $total = collect($validated['products'])->sum(
-            fn($item) => $products[$item['product_id']]->price * $item['quantity']
-        );
-        
-        $shippingFee = 50;
-        $grandTotal  = $total + $shippingFee;
-        
-        $order->update([
-            'total_amount' => $grandTotal,
-            'shipping_fee' => $shippingFee,
-        ]);
-
-        // Prevent updates to paid orders
-        if ($order->isPaid()) {
-        return redirect()->back()
-                       ->with('error', 'Cannot update order that has already been paid.');
-    }
-
-        return redirect()->route('orders.show', $order->order_id)
-                         ->with('success', 'Order updated successfully');
+                         ->with('success', 'Order created successfully');
     });
 }
 // For "Buy Now" functionality, we can create a separate method that creates an order directly from a single product without going through the cart.

@@ -9,7 +9,6 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\RecentViewController;
 use App\Models\SellerRequest;
 use App\Http\Controllers\SellerRequestController;
 use App\Models\SellerForm;
@@ -87,9 +86,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/wishlists', [WishlistController::class, 'store'])->name('wishlist.store');
     Route::post('/wishlists/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
     Route::delete('/wishlists/{wishlist}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
-
-    // Recent Views
-    Route::get('/recent-views', [RecentViewController::class, 'index'])->name('recentViews.index');
 
     // Seller Form (seller request that user can submit to admin for approval)
     Route::get('/profile/become-seller', [SellerFormController::class, 'create'])->name('seller.form.create');
