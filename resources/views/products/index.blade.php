@@ -27,7 +27,7 @@
 
 
 {{-- Carousel --}}
-<div class="swiper w-full rounded-xl overflow-hidden mb-0" style="height: 230px;">
+<div class="swiper w-full rounded-xl overflow-hidden mb-0" style="height: 140px;">
     <div class="swiper-wrapper">
         <div class="swiper-slide bg-cover bg-center" style="background-image: url('https://i.ibb.co/238kHWcy/LINE-ALBUM-Banner-260323-1.jpg')">
             <div class="bg-black/40 h-full flex items-center p-10">
