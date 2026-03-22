@@ -49,9 +49,17 @@ class OrderController extends Controller
         'payment_method'   => 'required|in:promptpay,credit_card,bank_transfer,cash_on_delivery',
         ]);
 
+         return DB::transaction(function () use ($validated, $request) {
         // Fetch products and calculate total price
         $productIds = collect($validated['products'])->pluck('product_id');
         $products   = Product::findMany($productIds)->keyBy('product_id');
+        //check stock
+         foreach ($validated['products'] as $item) {
+            $product = $products[$item['product_id']];
+            if ($product->stock_number < $item['quantity']) {
+                throw new \Exception("Stock not enough for {$product->name}");
+            }
+        }
         $total = collect($validated['products'])->sum(
             fn($item) => $products[$item['product_id']]->price * $item['quantity']
         );
@@ -76,6 +84,10 @@ class OrderController extends Controller
         )->toArray();
 
         $order->items()->createMany($orderItems);
+        //reduce stock
+         foreach ($validated['products'] as $item) {
+            $products[$item['product_id']]->decrement('stock_number', $item['quantity']);
+        }
         $order->payments()->create([
             'status'       => 'unpaid',
             'method'       => $validated['payment_method'],
@@ -88,6 +100,7 @@ class OrderController extends Controller
         
         return redirect()->route('payments.create', $order->order_id)
                  ->with('success', 'Order created successfully');
+                  });
     }
 
     public function show(string $id)
@@ -137,6 +150,15 @@ public function edit(string $id)
         ])->toArray();
 
         $order->products()->sync($syncData);
+        //reduce stock_number when it sold
+        foreach ($validated['products'] as $item) {
+    $product = $products[$item['product_id']];
+    if ($product->stock_number < $item['quantity']) {
+        throw new \Exception("Stock not enough for {$product->name}");
+    }
+    $product->decrement('stock_number', $item['quantity']);
+}
+
 
         // update total amount
         $total = collect($validated['products'])->sum(
