@@ -29,12 +29,7 @@
                         <span class="bg-pink-100 text-pink-600 px-3 py-1 rounded-full">#{{ $tag->name }}</span>
                     @endforeach
                 </div>
-                {{-- tags --}}
-                <div class="flex flex-wrap gap-2 text-xs mb-3">
-                    @foreach($product->tags as $tag)
-                        <span class="bg-pink-100 text-pink-600 px-3 py-1 rounded-full">#{{ $tag->name }}</span>
-                    @endforeach
-                </div>
+                
 
                 {{-- Name --}}
                 <h1 class="text-xl font-bold text-gray-800">{{ $product->name }}</h1>
@@ -48,8 +43,7 @@
 
                 {{-- description --}}
                 <p class="mt-3 text-gray-500 text-sm leading-relaxed">{{ $product->description }}</p>
-                {{-- description --}}
-                <p class="mt-3 text-gray-500 text-sm leading-relaxed">{{ $product->description }}</p>
+                
 
                 {{-- stock --}}
                 <p class="mt-2 text-xs text-gray-400">Remaining {{ $product->stock_number }}</p>

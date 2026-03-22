@@ -26,7 +26,7 @@ class SellerProductController extends Controller
 
     public function create()
     {
-        $tags = Tag::all();
+        $tags = \App\Models\Tag::all();
         return view('seller.create', compact('tags'));
     }
 
@@ -64,8 +64,8 @@ class SellerProductController extends Controller
     {
         // เช็คว่าเป็นสินค้าของ seller คนนี้จริงไหม
         $product = Auth::user()->sellerProducts()->where('products.product_id', $id)->firstOrFail();
-        $tags = Tag::all();
-        return view('seller.edit', compact('product', 'tags'));
+        $tags = \App\Models\Tag::all();
+          return view('seller.edit', compact('product', 'tags'));
     }
 
     public function update(Request $request, string $id)
