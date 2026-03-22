@@ -10,6 +10,7 @@ use App\Models\Payment;
 use App\Models\SellerForm;
 use Illuminate\Support\Facades\Auth; 
 use Illuminate\Support\Facades\DB;   
+
 class AdminController extends Controller
 {
     public function index()
@@ -21,154 +22,157 @@ class AdminController extends Controller
         return view('admin.index', compact('totalUsers', 'totalProducts', 'totalOrders', 'totalRevenue'));
     }
 
-    public function users()
+    public function users(Request $request)
     {
-        $users = User::latest()->get();
+        $users = User::when($request->search, fn($q) => 
+            $q->where('name', 'like', "%{$request->search}%")
+              ->orWhere('email', 'like', "%{$request->search}%")
+        )->latest()->get();
 
         $pendingRequests = \App\Models\SellerForm::with('user')->where('status', 'pending')->latest()->get();
 
         return view('admin.users', compact('users', 'pendingRequests'));
     }
 
-    public function orders()
+    public function orders(Request $request)
     {
-        $orders = Order::with('user', 'items.product')->latest('order_date')->get();
+        $orders = Order::with('user', 'items.product')
+            ->when($request->search, fn($q) => 
+                $q->whereHas('user', fn($u) => $u->where('name', 'like', "%{$request->search}%"))
+                  ->orWhere('order_id', 'like', "%{$request->search}%")
+            )->latest('order_date')->get();
         
         return view('admin.orders', compact('orders'));
     }
+
+    public function products(Request $request)
+    {
+        $products = Product::when($request->search, fn($q) => 
+            $q->where('name', 'like', "%{$request->search}%")
+        )->latest()->get();
+        return view('admin.products', compact('products'));
+    }
+
     public function markAsPacking(string $id)
-{
-    $order = Order::with('items.product.sellers')->findOrFail($id);
-    
-    // เช็คว่ามีสินค้าของ seller ไหม
-    $hasSeller = $order->items->some(fn($item) => $item->product->sellers->isNotEmpty());
-    
-    if ($hasSeller) {
-        return back()->with('error', 'This order contains seller products. Seller must handle packing.');
-    }
-    
-    $order->markAsPacking();
-    return redirect()->back()->with('success', 'Order marked as packing.');
-}
-
-public function markAsDelivering(string $id)
-{
-    $order = Order::with('items.product.sellers')->findOrFail($id);
-    
-    // เช็คว่ามีสินค้าของ seller ไหม
-    $hasSeller = $order->items->some(fn($item) => $item->product->sellers->isNotEmpty());
-    
-    if ($hasSeller) {
-        return back()->with('error', 'This order contains seller products. Seller must handle delivery.');
-    }
-    
-    $order->markAsDelivering();
-    return redirect()->back()->with('success', 'Order marked as delivering.');
-}
-public function markAsComplete(string $id)
-{
-    Order::findOrFail($id)->markAsComplete();
-    return redirect()->back()->with('success', 'Order marked as complete.');
-}
-// ลบ user
-public function destroyUser(string $id)
-{
-    User::findOrFail($id)->delete();
-    return redirect()->back()->with('success', 'User deleted successfully.');
-}
-
-// ลบ product
-public function destroyProduct(string $id)
-{
-    Product::where('product_id', $id)->firstOrFail()->delete();
-    return redirect()->back()->with('success', 'Product deleted successfully.');
-}
-
-// show all products 
-public function products()
-{
-    $products = Product::latest()->get();
-    return view('admin.products', compact('products'));
-}
-
-public function updateStatus(Request $request, $id)
-{
-    //seller manage theire own product
-    $order = Order::with('items.product.sellers')->findOrFail($id);
-    $newStatus = strtolower($request->status);
-    $currentStatus = strtolower($order->status);
-    //check payment bf confirm
-    if (strtolower($order->status) === 'pending' && $newStatus !== 'cancelled') {
-        if ($order->payment_status !== 'paid') {
-            return back()->with('error', 'cant confirm the order if did not pay');
+    {
+        $order = Order::with('items.product.sellers')->findOrFail($id);
+        
+        $hasSeller = $order->items->some(fn($item) => $item->product->sellers->isNotEmpty());
+        
+        if ($hasSeller) {
+            return back()->with('error', 'This order contains seller products. Seller must handle packing.');
         }
+        
+        $order->markAsPacking();
+        return redirect()->back()->with('success', 'Order marked as packing.');
     }
-    // prevent to back to previous status
-    $statusOrder = [
-        'pending'    => 1,
-        'processing' => 2,
-        'packing'    => 3,
-        'delivering' => 4,
-        'complete'   => 5,
-        'cancelled'  => 99 
-    ];
 
-    $currentRank = $statusOrder[strtolower($order->status)] ?? 0;
-    $newRank     = $statusOrder[strtolower($newStatus)] ?? 0;
+    public function markAsDelivering(string $id)
+    {
+        $order = Order::with('items.product.sellers')->findOrFail($id);
+        
+        $hasSeller = $order->items->some(fn($item) => $item->product->sellers->isNotEmpty());
+        
+        if ($hasSeller) {
+            return back()->with('error', 'This order contains seller products. Seller must handle delivery.');
+        }
+        
+        $order->markAsDelivering();
+        return redirect()->back()->with('success', 'Order marked as delivering.');
+    }
 
-    // if not Cancel and try to back
-    if ($newStatus !== 'cancelled' && $newRank <= $currentRank) {
-        return back()->with('error', 'Cannot move status backwards.');
+    public function markAsComplete(string $id)
+    {
+        Order::findOrFail($id)->markAsComplete();
+        return redirect()->back()->with('success', 'Order marked as complete.');
     }
-    $hasSeller = $order->items->some(fn($item) => $item->product->sellers->isNotEmpty());
-    //check that product if from seller or not
-    if ($hasSeller && in_array($newStatus, ['packing', 'delivering'])) {
-    return back()->with('error', 'This order contains seller products. Seller must handle packing and delivery.');
+
+    public function destroyUser(string $id)
+    {
+        User::findOrFail($id)->delete();
+        return redirect()->back()->with('success', 'User deleted successfully.');
     }
-    // 3. use Transaction for security of data
-    return \DB::transaction(function () use ($order, $newStatus) {
-        if ($newStatus === 'cancelled') {
-            // Refund Logic
-            if (strtolower($order->payment_status) === 'paid') {
-                $order->payment_status = 'refunded';
-                $order->payments()->where('status', 'paid')->update(['status' => 'refunded']);
-            } else {
-                $order->payment_status = 'cancelled';
+
+    public function destroyProduct(string $id)
+    {
+        Product::where('product_id', $id)->firstOrFail()->delete();
+        return redirect()->back()->with('success', 'Product deleted successfully.');
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $order = Order::with('items.product.sellers')->findOrFail($id);
+        $newStatus = strtolower($request->status);
+        $currentStatus = strtolower($order->status);
+
+        if (strtolower($order->status) === 'pending' && $newStatus !== 'cancelled') {
+            if ($order->payment_status !== 'paid') {
+                return back()->with('error', 'cant confirm the order if did not pay');
             }
+        }
 
-            // Restore Stock
-            foreach ($order->items as $item) {
-                if ($item->product) {
-                    $item->product->increment('stock_number', $item->quantity);
+        $statusOrder = [
+            'pending'    => 1,
+            'processing' => 2,
+            'packing'    => 3,
+            'delivering' => 4,
+            'complete'   => 5,
+            'cancelled'  => 99 
+        ];
+
+        $currentRank = $statusOrder[strtolower($order->status)] ?? 0;
+        $newRank     = $statusOrder[strtolower($newStatus)] ?? 0;
+
+        if ($newStatus !== 'cancelled' && $newRank <= $currentRank) {
+            return back()->with('error', 'Cannot move status backwards.');
+        }
+
+        $hasSeller = $order->items->some(fn($item) => $item->product->sellers->isNotEmpty());
+
+        if ($hasSeller && in_array($newStatus, ['packing', 'delivering'])) {
+            return back()->with('error', 'This order contains seller products. Seller must handle packing and delivery.');
+        }
+
+        return \DB::transaction(function () use ($order, $newStatus) {
+            if ($newStatus === 'cancelled') {
+                if (strtolower($order->payment_status) === 'paid') {
+                    $order->payment_status = 'refunded';
+                    $order->payments()->where('status', 'paid')->update(['status' => 'refunded']);
+                } else {
+                    $order->payment_status = 'cancelled';
+                }
+
+                foreach ($order->items as $item) {
+                    if ($item->product) {
+                        $item->product->increment('stock_number', $item->quantity);
+                    }
                 }
             }
-        }
 
-        $order->status = $newStatus;
-        $order->save();
+            $order->status = $newStatus;
+            $order->save();
 
-        return back()->with('success', "Order updated to {$newStatus}.");
-    });
-}
+            return back()->with('success', "Order updated to {$newStatus}.");
+        });
+    }
 
-// update user role (admin <-> customer)
-public function updateRole($id)
+    public function updateRole($id)
     {
         $user = User::findOrFail($id);
 
-    if ($user->id === Auth::id()) {
-        return back()->with('error', 'You cannot change your own role!');
+        if ($user->id === Auth::id()) {
+            return back()->with('error', 'You cannot change your own role!');
+        }
+
+        $roles = ['customer', 'seller', 'admin'];
+        $currentIndex = array_search($user->role, $roles);
+        $user->role = $roles[($currentIndex + 1) % count($roles)];
+        $user->save();
+
+        return back()->with('success', "Updated {$user->name}'s role to {$user->role} successfully.");
     }
 
-    $roles = ['customer', 'seller', 'admin'];
-    $currentIndex = array_search($user->role, $roles);
-    $user->role = $roles[($currentIndex + 1) % count($roles)];
-    $user->save();
-
-    return back()->with('success', "Updated {$user->name}'s role to {$user->role} successfully.");
-    }
-
-public function destroy($id)
+    public function destroy($id)
     {
         $user = User::findOrFail($id);
 
@@ -180,21 +184,14 @@ public function destroy($id)
         return back()->with('success', 'User removed successfully.');
     }
 
-    
-//create new admin from admin dashboard (optional)
-
-//using Seller
-public function approveSeller($id)
+    public function approveSeller($id)
     {
-        // use transaction for security of data (update 2 table at once -- seller_requests + users)
         return DB::transaction(function () use ($id) {
             $request = SellerForm::findOrFail($id);
             
-            // 1. อัปเดตสถานะฟอร์มว่าผ่านการอนุมัติแล้ว
             $request->status = 'approved';
             $request->save();
 
-            // 🌟 2. อัปเดต Role ของ User (แก้มาใช้แบบกำหนดค่าตรงๆ แล้วค่อย save)
             $user = $request->user;
             $user->role = 'seller';
             $user->save(); 
@@ -203,7 +200,6 @@ public function approveSeller($id)
         });
     }
 
-    // in case admin want to reject the request (optional)
     public function rejectSeller($id)
     {
         $request = SellerForm::findOrFail($id);
@@ -212,22 +208,21 @@ public function approveSeller($id)
         return back()->with('sorry', "Rejected request for {$request->user->name}! please try again later or contact support for more info.");
     }
 
-    // in case admin want to create new admin by himself (optional)
-public function storeAdmin(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|max:255|unique:users',
-        'password' => 'required|string|min:8', 
-    ]);
+    public function storeAdmin(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8', 
+        ]);
 
-    User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => \Hash::make($request->password),
-        'role' => 'admin', 
-    ]);
+        User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => \Hash::make($request->password),
+            'role' => 'admin', 
+        ]);
 
-    return back()->with('success', 'Create new admin successfully!');
-}
+        return back()->with('success', 'Create new admin successfully!');
+    }
 }

@@ -112,64 +112,72 @@
                 @endif
             </div>
 
-            <div class="py-12">
-                <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
-                        <table class="w-full text-sm">
-                            <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
-                                <tr>
-                                    <th class="px-6 py-3 text-left">ID</th>
-                                    <th class="px-6 py-3 text-left">Name</th>
-                                    <th class="px-6 py-3 text-left">Email</th>
-                                    <th class="px-6 py-3 text-left">Role</th>
-                                    <th class="px-6 py-3 text-left">Joined</th>
-                                    <th class="px-6 py-3 text-left">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                @foreach($users as $user)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 text-gray-400 text-sm">{{ $user->id }}</td>
-                                    <td class="px-6 py-4 font-medium text-gray-800 text-sm">{{ $user->name }}</td>
-                                    <td class="px-6 py-4 text-gray-500 text-sm">{{ $user->email }}</td>
-                                    <td class="px-6 py-4">
-                                        <span @class([
-                                            'px-2 py-1 rounded-full text-[10px] font-bold uppercase',
-                                            'bg-red-100 text-red-700'    => $user->role === 'admin',
-                                            'bg-blue-100 text-blue-700'  => $user->role === 'customer',
-                                            'bg-green-100 text-green-700' => $user->role === 'seller',
-                                        ])>
-                                            {{ $user->role }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 text-gray-400 text-sm">{{ $user->created_at->format('d/m/Y') }}</td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-2">
-                                            @if($user->id !== Auth::id())
-                                                <form method="POST" action="{{ route('admin.users.updateRole', $user->id) }}">
-                                                    @csrf @method('PATCH')
-                                                    <button type="submit" class="px-3 py-1 bg-amber-100 text-amber-600 rounded-lg text-xs font-bold hover:bg-amber-200 transition">
-                                                        Change Role
-                                                    </button>
-                                                </form>
-                                                <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}">
-                                                    @csrf @method('DELETE')
-                                                    <button type="submit" onclick="return confirm('Are you sure you want to delete this user?')"
-                                                            class="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs font-bold hover:bg-red-200 transition">
-                                                        Delete
-                                                    </button>
-                                                </form>
-                                            @else
-                                                <span class="text-xs text-gray-300 italic">Current Admin</span>
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+            {{-- Search Bar --}}
+            <form method="GET" action="{{ route('admin.users') }}">
+                <div class="bg-white rounded-2xl shadow-sm border border-pink-100 p-4 flex gap-3 items-center">
+                    <input type="text" name="search" value="{{ request('search') }}"
+                        placeholder="Search by name or email..."
+                        class="flex-1 border-gray-200 rounded-xl p-3 text-sm focus:ring-pink-500 focus:border-pink-500">
+                    <button type="submit" class="px-6 py-3 bg-pink-400 hover:bg-pink-500 text-white rounded-xl text-sm font-medium">
+                        Search
+                    </button>
                 </div>
+            </form>
+
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+                        <tr>
+                            <th class="px-6 py-3 text-left">ID</th>
+                            <th class="px-6 py-3 text-left">Name</th>
+                            <th class="px-6 py-3 text-left">Email</th>
+                            <th class="px-6 py-3 text-left">Role</th>
+                            <th class="px-6 py-3 text-left">Joined</th>
+                            <th class="px-6 py-3 text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach($users as $user)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 text-gray-400 text-sm">{{ $user->id }}</td>
+                            <td class="px-6 py-4 font-medium text-gray-800 text-sm">{{ $user->name }}</td>
+                            <td class="px-6 py-4 text-gray-500 text-sm">{{ $user->email }}</td>
+                            <td class="px-6 py-4">
+                                <span @class([
+                                    'px-2 py-1 rounded-full text-[10px] font-bold uppercase',
+                                    'bg-red-100 text-red-700'     => $user->role === 'admin',
+                                    'bg-blue-100 text-blue-700'   => $user->role === 'customer',
+                                    'bg-green-100 text-green-700' => $user->role === 'seller',
+                                ])>
+                                    {{ $user->role }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-400 text-sm">{{ $user->created_at->format('d/m/Y') }}</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    @if($user->id !== Auth::id())
+                                        <form method="POST" action="{{ route('admin.users.updateRole', $user->id) }}">
+                                            @csrf @method('PATCH')
+                                            <button type="submit" class="px-3 py-1 bg-amber-100 text-amber-600 rounded-lg text-xs font-bold hover:bg-amber-200 transition">
+                                                Change Role
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" onclick="return confirm('Are you sure you want to delete this user?')"
+                                                    class="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs font-bold hover:bg-red-200 transition">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    @else
+                                        <span class="text-xs text-gray-300 italic">Current Admin</span>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
