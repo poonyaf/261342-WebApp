@@ -36,14 +36,14 @@
             {{ $slot }}
         </main>
     {{-- FOOTER --}}
-<footer style="background: var(--pinkPage-accent); padding: 32px 0; text-align: center;">
+<footer style="background: var(--primary); padding: 32px 0; text-align: center;">
     <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
         <img src="{{ asset('images/FontLogo.png') }}" 
              style="height:25px; width:auto; object-fit:contain;">
         <p style="font-size:0.85rem; color: var(--pinkPage-secondary); opacity:0.8;">
             Great styles, stellar prices
         </p>
-        <p style="font-size:0.8rem; color: var(--pinkPage-secondary); opacity:0.6;">
+        <p style="font-size:0.8rem; color: var(--pinkPage-secondary); opacity:0.5;">
             © {{ date('Y') }} Stellar. All rights reserved.
         </p>
     </div>
