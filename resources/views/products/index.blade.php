@@ -1,31 +1,6 @@
 <x-app-layout class="{{ ($mode ?? 'online') === 'Secondhand/2nd hand' ? 'theme-brown' : '' }}">
 
     <div class="page-wrap">
-            
-        {{-- Carousel --}}
-        <div class="swiper w-full h-[400px] rounded-xl overflow-hidden">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide bg-cover bg-center" style="background-image: url('image1.jpg')">
-                    <div class="bg-black/40 h-full flex items-center p-10">
-                        <h2 class="text-white text-4xl font-bold">2nd Hand Market</h2>
-                    </div>
-                </div>
-                <div class="swiper-slide bg-cover bg-center" style="background-image: url('image2.jpg')">...</div>
-            </div>
-            <div class="swiper-pagination"></div>
-            <div class="swiper-button-prev"></div>
-            <div class="swiper-button-next"></div>
-        </div>
-
-        <script>
-        const swiper = new Swiper('.swiper', {
-            loop: true,
-            autoplay: { delay: 3000 },
-            pagination: { el: '.swiper-pagination' },
-            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-        });
-        </script>
-
         <div class="container">
             {{-- Mode Toggle --}}
             <div class="flex justify-center mb-10">
@@ -49,6 +24,29 @@
                     {{ ($mode ?? 'online') === 'Secondhand/2nd hand' ? 'Explore our curated selection of pre-loved treasures, from vintage finds to gently used gems. Shop sustainably and discover unique items with character.' : 'Browse our collection of new products, carefully curated for quality and style. Find the perfect item that suits your needs and preferences.' }}
                 </p>
             </div>
+
+
+{{-- Carousel --}}
+<div class="swiper w-full h-[400px] rounded-xl overflow-hidden">
+    <div class="swiper-wrapper">
+        <div class="swiper-slide bg-cover bg-center" style="background-image: url('https://i.ibb.co/238kHWcy/LINE-ALBUM-Banner-260323-1.jpg')">
+            <div class="bg-black/40 h-full flex items-center p-10">
+                <h2 class="text-white text-4xl font-bold">2nd Hand Market</h2>
+            </div>
+        </div>
+    </div>
+    <div class="swiper-pagination"></div>
+    <div class="swiper-button-prev"></div>
+    <div class="swiper-button-next"></div>
+</div>
+            <script>
+            const swiper = new Swiper('.swiper', {
+                loop: true,
+                autoplay: { delay: 3000 },
+                pagination: { el: '.swiper-pagination' },
+                navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+            });
+            </script>
 
             {{-- Search Bar --}}
             <div class="mb-8 card card-pad" style="border-top: 3px solid var(--secondary);">
@@ -81,6 +79,7 @@
                                 $clearUrl .= '?mode=' . urlencode($mode ?? 'online');
                             }
                         @endphp
+
                         <a href="{{ $clearUrl }}" class="btn" style="background: var(--pinkPage-neutral-2); color: var(--text);">
                             ✕ Clear
                         </a>
@@ -95,11 +94,9 @@
                         <span>🏷️</span> Category
                     </h3>
                     <div class="flex flex-wrap gap-2">
-
-                        {{-- ปุ่ม All --}}
-                        <a href="#"
-                            onclick="filterProducts(null, this); return false;"
-                            class="badge transition hover:shadow-md category-btn"
+                        <a
+                            href="{{ route('products.index', ['mode' => $mode ?? 'online']) }}"
+                            class="badge transition hover:shadow-md"
                             style="
                                 background: {{ !($category ?? false) ? 'linear-gradient(135deg, var(--primary), var(--secondary))' : 'var(--pinkPage-neutral-2)' }};
                                 color: {{ !($category ?? false) ? '#fff' : 'var(--text)' }};
@@ -111,11 +108,10 @@
                             All
                         </a>
 
-                        {{-- Category Buttons --}}
                         @foreach ($categories as $cat)
-                            <a href="#"
-                                onclick="filterProducts('{{ $cat }}', this); return false;"
-                                class="badge transition hover:shadow-md category-btn"
+                            <a
+                                href="{{ route('products.index', ['category' => $cat, 'mode' => $mode ?? 'online']) }}"
+                                class="badge transition hover:shadow-md"
                                 style="
                                     background: {{ (($category ?? false) === $cat) ? 'linear-gradient(135deg, var(--primary), var(--secondary))' : 'var(--pinkPage-neutral-2)' }};
                                     color: {{ (($category ?? false) === $cat) ? '#fff' : 'var(--text)' }};
@@ -127,13 +123,12 @@
                                 {{ $cat }}
                             </a>
                         @endforeach
-
                     </div>
                 </div>
             @endif
 
             {{-- Product Grid --}}
-            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
                 @forelse ($products as $product)
                     <div class="card group overflow-hidden transition-all hover:shadow-lg hover:scale-105 duration-300"
                          style="border: 1px solid rgba(0,0,0,0.05);">
@@ -152,32 +147,33 @@
                                     <span class="muted text-xs">No Image</span>
                                 </div>
                             @endif
+    
+                        {{-- Stock Badge (ย้ายมาซ้ายบน) --}}
+                        <div class="absolute top-3 left-3 text-xs px-3 py-1 rounded-full font-semibold backdrop-blur-sm shadow-sm"
+                            style="background: rgba(255,255,255,0.9); color: var(--text);">
+                            {{ $product->stock_number > 0 ? '✓ In Stock' : '✗ Out' }}
+                        </div>
 
-                            {{-- Stock Badge --}}
-                            <div class="absolute top-3 left-3 text-xs px-3 py-1 rounded-full font-semibold backdrop-blur-sm shadow-sm"
-                                style="background: rgba(255,255,255,0.9); color: var(--text);">
-                                {{ $product->stock_number > 0 ? '✓ In Stock' : '✗ Out' }}
-                            </div>
-
-                            {{-- Wishlist Button --}}
-                            @auth
-                                @php
-                                    $isWishlisted = \App\Models\Wishlist::where('user_id', auth()->id())
-                                                        ->where('product_id', $product->product_id)
-                                                        ->exists();
-                                @endphp
-                                <button type="button" 
-                                    onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist(this, {{ $product->product_id }})" 
-                                    class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-md transition-transform hover:scale-110 z-20 cursor-pointer"
-                                    style="color: var(--favorite-star);">
-                                    <svg class="w-5 h-5 wishlist-icon transition-colors duration-200" 
-                                        fill="{{ $isWishlisted ? 'currentColor' : 'none' }}" 
-                                        stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                                    </svg>
-                                </button>
-                            @endauth
+                        {{-- 🌟 Wishlist (Favorite) Button (ขวาบน) --}}
+                        @auth
+                            @php
+                                $isWishlisted = \App\Models\Wishlist::where('user_id', auth()->id())
+                                                    ->where('product_id', $product->product_id)
+                                                    ->exists();
+                            @endphp
+                            <button type="button" 
+                                onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist(this, {{ $product->product_id }})" 
+                                class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-md transition-transform hover:scale-110 z-20 cursor-pointer"
+                                style="color: var(--favorite-star);">
+                            
+                            <svg class="w-5 h-5 wishlist-icon transition-colors duration-200" 
+                                fill="{{ $isWishlisted ? 'currentColor' : 'none' }}" 
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                            </svg>
+                        </button>
+                        @endauth
                         </div>
 
                         <div class="card-pad flex flex-col gap-3 flex-1">
@@ -232,82 +228,48 @@
                             <p class="muted text-sm mt-2">Try adjusting your search or filters</p>
                         @endif
                     </div>
+
+                    {{-- Wishlist Toggle Script --}}
+                    <script>
+                    function toggleWishlist(btn, productId) {
+                        btn.disabled = true;
+                        const icon = btn.querySelector('.wishlist-icon');
+                    
+                        icon.style.opacity = '0.5';
+
+                        // 2. ส่งข้อมูลไปที่ Controller
+                        fetch('{{ route("wishlist.toggle") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify({ product_id: productId })
+                        })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network Error');
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.wishlisted) {
+                                icon.setAttribute('fill', 'currentColor'); // เติมสีทึบ
+                            } else {
+                                icon.setAttribute('fill', 'none'); // เอาสีออก (โปร่งใส)
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error updating wishlist. Please try again.');
+                        })
+                        .finally(() => {
+                            btn.disabled = false;
+                            icon.style.opacity = '1';
+                        });
+                    }
+                </script>
                 @endforelse
             </div>
         </div>
     </div>
-
-    <script>
-    function filterProducts(cat, el) {
-        // อัป active style
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.style.background = 'var(--pinkPage-neutral-2)';
-            btn.style.color = 'var(--text)';
-            btn.style.border = '1px solid rgba(0,0,0,0.08)';
-        });
-        el.style.background = 'linear-gradient(135deg, var(--primary), var(--secondary))';
-        el.style.color = '#fff';
-        el.style.border = '1px solid transparent';
-
-        // สร้าง URL ใหม่
-        const url = new URL(window.location.href);
-        if (cat) {
-            url.searchParams.set('category', cat);
-        } else {
-            url.searchParams.delete('category');
-        }
-        history.pushState({}, '', url);
-
-        // loading effect
-        const grid = document.getElementById('product-grid');
-        grid.style.opacity = '0.4';
-        grid.style.transition = 'opacity 0.2s';
-
-        // fetch เฉพาะ product grid
-        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-            .then(res => res.text())
-            .then(html => {
-                const doc = new DOMParser().parseFromString(html, 'text/html');
-                grid.innerHTML = doc.getElementById('product-grid').innerHTML;
-                grid.style.opacity = '1';
-            })
-            .catch(() => { grid.style.opacity = '1'; });
-    }
-
-    function toggleWishlist(btn, productId) {
-        btn.disabled = true;
-        const icon = btn.querySelector('.wishlist-icon');
-        icon.style.opacity = '0.5';
-
-        fetch('{{ route("wishlist.toggle") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({ product_id: productId })
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Network Error');
-            return response.json();
-        })
-        .then(data => {
-            if (data.wishlisted) {
-                icon.setAttribute('fill', 'currentColor');
-            } else {
-                icon.setAttribute('fill', 'none');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error updating wishlist. Please try again.');
-        })
-        .finally(() => {
-            btn.disabled = false;
-            icon.style.opacity = '1';
-        });
-    }
-    </script>
-
 </x-app-layout>
