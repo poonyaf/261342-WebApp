@@ -10,7 +10,7 @@
 
             {{-- Header --}}
             <div class="flex items-center gap-2 mb-6">
-               <a href="{{ route('dashboard') }}" class="text-sm text-gray-500 hover:underline">← Back</a>
+              <a href="{{ route('products.index') }}" class="text-sm text-gray-500 hover:underline">← Back</a>
             </div>
 
             <h1 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
